@@ -1,0 +1,40 @@
+<zk>
+	<zscript><![CDATA[
+		boolean w = false;
+		boolean h = false;
+	]]></zscript>
+	<div vflex="1" width="50%" style="border: 1px solid green">
+		<canvas id="cvs" hflex="1" vflex="1" />
+	</div>
+	<div vflex="1">
+		<button label="Width">
+			<attribute name="onClick">
+				if (w) {
+					cvs.width = null;
+					cvs.hflex = "1";
+				} else {
+					cvs.hflex = null;
+					cvs.width = "300px";
+				}
+				w = !w;
+			</attribute>
+		</button>
+		<button label="Height">
+			<attribute name="onClick">
+				if (h) {
+					cvs.height = null;
+					cvs.vflex = "1";
+				} else {
+					cvs.vflex = null;
+					cvs.height = "300px";
+				}
+				h = !h;
+			</attribute>
+		</button>
+	</div>
+	<zscript><![CDATA[
+		cvs.add(new org.zkoss.canvas.Rectangle(0,0,2000,2000)
+			.setDrawingType("both")
+			.setFillStyle("#888888"));
+	]]></zscript>
+</zk>
