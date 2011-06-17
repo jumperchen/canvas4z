@@ -1,0 +1,53 @@
+<zk>
+	<script><![CDATA[
+		zk.afterLoad('canvas', function(){
+			zk.override(canvas.Canvas.prototype, 'doClick_', function (evt) {
+				this.$supers('doClick_', arguments);
+				var n = this.$n(),
+					cvsx = n.offsetLeft,
+					cvsy = n.offsetTop,
+					x = evt.data.pageX - cvsx,
+					y = evt.data.pageY - cvsy,
+					t = new Date().getTime(),
+					inside = this._drwbls[0].contains(x, y)
+					tdiff = new Date().getTime() - t;
+				zk.log(x, y, inside, tdiff);
+			});
+		});
+	]]></script>
+	<canvas id="cvs" width="500px" height="500px" />
+	<zscript><![CDATA[
+		import org.zkoss.canvas.*;
+		import org.zkoss.canvas.util.Shapes;
+		
+		/*
+		org.zkoss.canvas.Path star = Shapes.nStar(10, 7, 30)
+			.transform(new java.awt.geom.AffineTransform(10, 0, 0, 10, 200, 200))
+			.setDrawingType("stroke");
+		cvs.add(star);
+		*/
+		
+		org.zkoss.canvas.Path heart = Shapes.heart(10)
+			.transform(new java.awt.geom.AffineTransform(20, 0, 0, 20, 200, 200))
+			.setDrawingType("stroke");
+		cvs.add(heart);
+		
+		//System.out.println(heart.contains(392, 280));
+		
+	]]></zscript>
+	<script defer="true"><![CDATA[
+		var cvs = zk.Widget.$('$cvs'),
+			ctx = cvs._ctx,
+			p = cvs._drwbls[0],
+			w = 3,
+			h = 3,
+			fs = ctx.fillStyle;
+		
+		for (var i = 0; i < 500; i += w)
+			for (var j = 0; j < 500; j += h) {
+				ctx.fillStyle = p.contains(i, j) ? '#FF00FF' : '#00FFFF';
+				ctx.fillRect(i, j, 1, 1);
+			}
+		ctx.fillStyle = fs;
+	]]></script>
+</zk>
