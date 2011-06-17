@@ -71,24 +71,6 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	
 	// TODO: rerender upon resize
 	
-	bind_: function(){
-		this.$supers("bind_", arguments);
-		
-		this._cvs = document.createElement("canvas");
-		var w = this.$n().clientWidth;
-		var h = this.$n().clientHeight;
-		if (w) this._cvs.width = zk.parseInt(w);
-		if (h) this._cvs.height = zk.parseInt(h);
-		if (zk.ie) G_vmlCanvasManager.initElement(this._cvs);
-		
-		this._cvs.id = this.uuid + '-cnt';
-		// TODO: <canvas> zclass
-		
-		this._ctx = this._cvs.getContext("2d");
-		jq(this.$n()).append(this._cvs);
-		
-		this._repaint();
-	},
 	setDrwngs: function(v) {
 		this._drwbls = _createDrawables(jq.evalJSON(v));
 	},
@@ -371,9 +353,53 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		this._drwTp = this._drwTpBak;
 		this._ctx.restore();
 	},
-	
-	
-	
+	//@Override
+	bind_: function () {
+		this.$supers("bind_", arguments);
+		zWatch.listen({onSize: this, onShow: this});
+		
+		this._cvs = document.createElement("canvas");
+		this._init();
+		
+		this._cvs.id = this.uuid + '-cnt';
+		// TODO: <canvas> zclass
+		
+		this._ctx = this._cvs.getContext("2d");
+		jq(this.$n()).append(this._cvs);
+		
+		this._repaint();
+	},
+	unbind_: function () {
+		zWatch.unlisten({onSize: this, onShow: this});
+		this.$supers("unbind_", arguments);
+	},
+	_init: function () {
+		var n = this.$n(),
+			w = n.offsetWidth,
+			h = n.offsetHeight,
+			cvs = this._cvs;
+		if (w) 
+			cvs.width = zk.parseInt(w);
+		if (h) 
+			cvs.height = zk.parseInt(h);
+		if (zk.ie) 
+			G_vmlCanvasManager.initElement(cvs);
+	},
+	onSize: _zkf = function () {
+		this._init();
+		this._repaint();
+	},
+	onShow: _zkf,
+	setWidth: function () {
+		this.$supers('setWidth', arguments);
+		if (this.$n())
+			this.onSize();
+	},
+	setHeight: function () {
+		this.$supers('setHeight', arguments);
+		if (this.$n())
+			this.onSize();
+	},
 	doClick_: function(evt) {
 		// TODO: select
 		this.$supers('doClick_', arguments);
