@@ -1,0 +1,12 @@
+<?page title="Basic Test 01" contentType="text/html;charset=UTF-8"?>
+<zk>
+	<window title="Basic Test 01" border="normal">
+		<canvas id="cvs" width="500px" height="300px" />
+		<zscript><![CDATA[
+			import org.zkoss.canvas.*;
+			Rectangle r = new Rectangle(50, 50, 400, 200);
+			r.setDrawingType("stroke");
+			cvs.add(r);
+		]]></zscript>
+	</window>
+</zk>

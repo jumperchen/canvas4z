@@ -28,8 +28,10 @@ import org.zkoss.json.JSONObject;
  *
  */
 public abstract class Drawable implements JSONAware, Cloneable {
+	
 	private Attrs _state;
 	private java.awt.Shape _clipping;
+	protected boolean _selectable = false;
 	
 	/**
 	 * Subclass constructor should call super().
@@ -42,10 +44,22 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Returns the type of Drawable to specify how the resource should be drawn
 	 * on client side
 	 */
-	/*
-	 * The value must match the setting in Canvas.js #_paint
+	public abstract String getType(); // The value must match the setting in Canvas.js #_paint // TODO: make it customizable
+	
+	/**
+	 * Returns true if selectable.
 	 */
-	public abstract String getType();
+	public boolean isSelectable() {
+		return _selectable;
+	}
+	
+	/**
+	 * Set whether this Drawable is selectable.
+	 */
+	public Drawable setSelectable(boolean selectable) {
+		_selectable = selectable;
+		return this;
+	}
 	
 	/**
 	 * Returns a JSON Object representing ONLY the shape.
@@ -58,6 +72,8 @@ public abstract class Drawable implements JSONAware, Cloneable {
 		map.put("objtp", getType());
 		map.put("obj", getShapeJSONObject());
 		map.put("state", _state);
+		if(_selectable)
+			map.put("slbl", true);
 		return JSONObject.toJSONString(map);
 	}
 	

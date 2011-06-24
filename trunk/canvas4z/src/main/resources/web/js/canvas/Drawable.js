@@ -275,6 +275,11 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	contains: function (x, y) {
 		return false;
 	},
+	/**
+	 * Paints the drawable item. Shall be implemented by subclass.
+	 */
+	paint_: function (cvs) {
+	},
 	// copy state data from drw
 	_copyState: function (drw) {
 		// TODO: may use zk.copy

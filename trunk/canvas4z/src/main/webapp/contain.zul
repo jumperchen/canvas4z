@@ -32,8 +32,6 @@
 			.setDrawingType("stroke");
 		cvs.add(heart);
 		
-		//System.out.println(heart.contains(392, 280));
-		
 	]]></zscript>
 	<script defer="true"><![CDATA[
 		var cvs = zk.Widget.$('$cvs'),

@@ -12,7 +12,7 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 */
 (function () {
 	
-	// TODO: move to static methods
+	// TODO: move to static methods, or make it extensible
 	function _createDrawables(drws) { // TODO: take JSON directly
 		//var arr = [];
 		for (var arr = [], i = 0, len = drws.length; i < len; i++)
@@ -28,17 +28,14 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 			return zk.copy(new canvas.Path(), drw);
 		case "text":
 			return zk.copy(new canvas.Text(), drw);
-			break;
 		case "comp":
 			// TODO: introduce composite drawable
 			//this._paintComposite(drw.obj);
 			break;
 		case "img":
-			//this._paintImage(drw.obj);
-			break;
+			return zk.copy(new canvas.ImageSnapshot(), drw);
 		case "cvs":
-			//this._paintCanvas(drw.obj);
-			break;
+			return zk.copy(new canvas.CanvasSnapshot(), drw);
 		case "vid":
 		default:
 			// unsupported types
@@ -71,60 +68,60 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	
 	// TODO: rerender upon resize
 	
-	setDrwngs: function(v) {
+	setDrwngs: function (v) {
 		this._drwbls = _createDrawables(jq.evalJSON(v));
 	},
-	setAdd: function(drwJSON) {
+	setAdd: function (drwJSON) {
 		this.add(_createDrawable(jq.evalJSON(drwJSON)));
 	},
 	/**
 	 * Adds a Drawable to canvas.
 	 */
-	add: function(drw) {
+	add: function (drw) {
 		this._paint(drw);
 		this._drwbls.push(drw);
 	},
-	setRemove: function(index) {
+	setRemove: function (index) {
 		this.remove(index);
 	},
 	/**
 	 * Removes the Drawable at specific index.
 	 */
-	remove: function(index) {
+	remove: function (index) {
 		var drw = this._drwbls.splice(index,1);
 		this._repaint();
 		return drw;
 	},
-	setInsert: function(idrwJSON) {
+	setInsert: function (idrwJSON) {
 		var idrw = _createDrawable(jq.evalJSON(idrwJSON));
 		this.insert(idrw.i, idrw.drw);
 	},
 	/**
 	 * Inserts a Drawable at specific index.
 	 */
-	insert: function(index, drw){
+	insert: function (index, drw) {
 		this._drwbls.splice(index, 0, drw);
 		this._repaint();
 	},
-	setReplace: function(idrwJSON) {
+	setReplace: function (idrwJSON) {
 		var idrw = _createDrawable(jq.evalJSON(idrwJSON));
 		this.replace(idrw.i, idrw.drw);
 	},
 	/**
 	 * Replace the Drawable at specific index.
 	 */
-	replace: function(index, drw){
+	replace: function (index, drw) {
 		var removed = this._drwbls.splice(index, 1, drw);
 		this._repaint();
 		return removed[0];
 	},
-	setClear: function(){
+	setClear: function () {
 		this.clear();
 	},
 	/**
 	 * Remove all Drawables.
 	 */
-	clear: function(){
+	clear: function () {
 		this._drwbls = [];
 		this._clearCanvas();
 	},
@@ -140,44 +137,21 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	
 	
 	// private //
-	_clearCanvas: function() {
-		this._ctx.clearRect(0,0,this._cvs.width,this._cvs.height);
+	_clearCanvas: function () {
+		this._ctx.clearRect(0, 0, this._cvs.width, this._cvs.height);
 	},
-	_repaint: function() {
+	_repaint: function () {
 		this._clearCanvas();
-		for(var i=0; i<this._drwbls.length; i++)
-			this._paint(this._drwbls[i]);
+		for (var i = 0, drws = this._drwbls, len = drws.length; i < len; i++)
+			this._paint(drws[i]);
 	},
 	_paint: function(drw){
 		// TODO: preload image issue
 		this._applyLocalState(drw.state);
-		
-		// the type value must match the return value of Drawable#getType()
-		switch(drw.objtp){
-		case "rect":
-			this._paintRect(drw.obj);
-			break;
-		case "path":
-			this._paintPath(drw.obj);
-			break;
-		case "text":
-			this._paintText(drw.obj);
-			break;
-		case "comp":
-			this._paintComposite(drw.obj);
-			break;
-		case "img":
-			this._paintImage(drw.obj);
-			break;
-		case "cvs":
-			this._paintCanvas(drw.obj);
-			break;
-		case "vid":
-		default:
-			// unsupported types
-		}
+		drw.paint_(this);
 		this._unapplyLocalState();
 	},
+	/*
 	_paintRect: function(rect) {
 		switch(this._drwTp){
 		case "none":
@@ -214,11 +188,12 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		}
 		this._ctx.beginPath();
 	},
+	*/
 	_drawPath: function(path) {
 		var segments = path.sg;
 		this._ctx.beginPath();
 		
-		for(var i=0, len=segments.length; i<len; i++){
+		for (var i = 0, len = segments.length; i < len; i++){
 			var data = segments[i].dt;
 			switch(segments[i].tp){
 			case "mv":
@@ -240,6 +215,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 			}
 		}
 	},
+	/*
 	_paintText: function(text) {
 		switch(this._drwTp){
 		case "none":
@@ -258,20 +234,20 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	},
 	_strkTxt: function(text) {
 		// TODO: simplify
-		if(this._txtMxW < 0)
+		if (this._txtMxW < 0)
 			this._ctx.strokeText(text.t, text.x, text.y);
 		else
 			this._ctx.strokeText(text.t, text.x, text.y, this._txtMxW);
 	},
 	_filTxt: function(text) {
 		// TODO: simplify
-		if(this._txtMxW < 0)
+		if (this._txtMxW < 0)
 			this._ctx.fillText(text.t, text.x, text.y);
 		else
 			this._ctx.fillText(text.t, text.x, text.y, this._txtMxW);
 	},
+	*/
 	_paintComposite: function (comp) {
-		// TODO: test
 		if (comp)
 			for (var i = 0, len = comp.length; i < len; i++)
 				this._paint(comp[i]);
@@ -308,7 +284,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		*/
 	},
 	// state management helper //
-	_applyLocalState: function(st) {
+	_applyLocalState: function (st) {
 		// save current global state on DOM canvas context
 		this._txtMxWBak = this._txtMxW;
 		this._drwTpBak = this._drwTp;
@@ -316,38 +292,39 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		// apply local state to context
 		this._setDOMContextState(st);
 	},
-	_setDOMContextState: function(st) {
+	_setDOMContextState: function (st) {
+		var ctx = this._ctx;
 		// drawing type is NOT a part of DOM Canvas state
-		if(st.dwtp) this._drwTp = st.dwtp;
+		if(st.dwtp) 
+			this._drwTp = st.dwtp;
 		if(st.trns) { // transformation
 			var trns = st.trns;
-			this._ctx.setTransform(
-					trns[0], trns[1], trns[2], trns[3], trns[4], trns[5]);
+			ctx.setTransform(trns[0], trns[1], trns[2], trns[3], trns[4], trns[5]);
 		}
 		if(st.clp) { // clipping
-			this._drawPath(st.clp.obj);
-			this._ctx.clip();
-			this._ctx.beginPath();
+			this._drawPath(st.clp.obj); // TODO: call on path function
+			ctx.clip();
+			ctx.beginPath();
 		}
-		if(st.strk) this._ctx.strokeStyle   = st.strk;
-		if(st.fil)  this._ctx.fillStyle     = st.fil;
-		if(st.alfa) this._ctx.globalAlpha   = st.alfa;
-		if(st.lnw)  this._ctx.lineWidth     = st.lnw;
-		if(st.lncp) this._ctx.lineCap       = st.lncp;
-		if(st.lnj)  this._ctx.lineJoin      = st.lnj;
-		if(st.mtr)  this._ctx.miterLimit    = st.mtr;
-		if(st.shx)  this._ctx.shadowOffsetX = st.shx;
-		if(st.shy)  this._ctx.shadowOffsetY = st.shy;
-		if(st.shb)  this._ctx.shadowBlur    = st.shb;
-		if(st.shc)  this._ctx.shadowColor   = st.shc;
-		if(st.cmp)  this._ctx.globalCompositeOperation = st.cmp;
-		if(st.fnt)  this._ctx.font          = st.fnt;
-		if(st.txal) this._ctx.textAlign     = st.txal;
-		if(st.txbl) this._ctx.textBaseline  = st.txbl;
+		if(st.strk) ctx.strokeStyle   = st.strk;
+		if(st.fil)  ctx.fillStyle     = st.fil;
+		if(st.alfa) ctx.globalAlpha   = st.alfa;
+		if(st.lnw)  ctx.lineWidth     = st.lnw;
+		if(st.lncp) ctx.lineCap       = st.lncp;
+		if(st.lnj)  ctx.lineJoin      = st.lnj;
+		if(st.mtr)  ctx.miterLimit    = st.mtr;
+		if(st.shx)  ctx.shadowOffsetX = st.shx;
+		if(st.shy)  ctx.shadowOffsetY = st.shy;
+		if(st.shb)  ctx.shadowBlur    = st.shb;
+		if(st.shc)  ctx.shadowColor   = st.shc;
+		if(st.cmp)  ctx.globalCompositeOperation = st.cmp;
+		if(st.fnt)  ctx.font          = st.fnt;
+		if(st.txal) ctx.textAlign     = st.txal;
+		if(st.txbl) ctx.textBaseline  = st.txbl;
 		// maxWidth is not a part of DOM Canvas state
 		if(st.txmw) this._txtMxW = st.txmw;
 	},
-	_unapplyLocalState: function() {
+	_unapplyLocalState: function () {
 		// restore global state
 		this._txtMxW = this._txtMxWBak;
 		this._drwTp = this._drwTpBak;
@@ -398,17 +375,33 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	setHeight: function () {
 		this.$supers('setHeight', arguments);
 		if (this.$n())
-			this.onSize();
+			this.onSize(); // TODO: refine
 	},
-	doClick_: function(evt) {
+	_getSelected: function (evt) {
+		var n = this.$n(),
+			x = evt.data.pageX - n.offsetLeft,
+			y = evt.data.pageY - n.offsetTop;
+		for (var drws = this._drwbls, i = drws.length, d; i--;) 
+			if ((d = drws[i]) && d.slbl && d.contains(x,y))
+				return i;
+	},
+	doMouseMove_: function (evt) {
+		var i = this._getSelected(evt);
+		if (this._sldi != i) {
+			// TODO: effect
+			this._sldi = i;
+		}
+		this.$supers('doMouseMove_', arguments);
+	},
+	doClick_: function (evt) {
 		// TODO: select
 		this.$supers('doClick_', arguments);
 	},
-	//super//
 	getZclass: function () {
 		var zcs = this._zclass;
 		return zcs != null ? zcs: "z-canvas";
 	}
+	
 });
 
 })();

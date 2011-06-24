@@ -38,6 +38,38 @@ canvas.Text = zk.$extends(canvas.Drawable, {
 	setText: function (txt) {
 		this.obj.t = txt;
 		return this;
+	},
+	paint_: function (cvs) {
+		switch(cvs._drwTp){
+		case "none":
+			break;
+		case "stroke":
+			this._strkTxt(cvs);
+			break;
+		case "both":
+			this._filTxt(cvs);
+			this._strkTxt(cvs);
+			break;
+		case "fill":
+		default:
+			this._filTxt(cvs);
+		}
+	},
+	_strkTxt: function(cvs) {
+		var t = this.obj;
+		// TODO: merge
+		if (cvs._txtMxW < 0)
+			cvs._ctx.strokeText(t.t, t.x, t.y);
+		else
+			cvs._ctx.strokeText(t.t, t.x, t.y, cvs._txtMxW);
+	},
+	_filTxt: function(cvs) {
+		var t = this.obj;
+		// TODO: merge
+		if (cvs._txtMxW < 0)
+			cvs._ctx.fillText(t.t, t.x, t.y);
+		else
+			cvs._ctx.fillText(t.t, t.x, t.y, cvs._txtMxW);
 	}
 	
 });
