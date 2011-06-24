@@ -117,6 +117,34 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 			_getBezierCrossing(x, y, mx, my, x1, y1, cpxb1, cpyb1, cpxa1, cpya1, d);
 	}
 	
+	function _drawPath(cvs, path) {
+		var sgs = path.sg,
+			ctx = cvs._ctx;
+		ctx.beginPath();
+		
+		for (var i = 0, len = sgs.length; i < len; i++) {
+			var sg = sgs[i],
+				data = sg.dt;
+			switch(sg.tp){
+			case "mv":
+				ctx.moveTo(data[0], data[1]);
+				break;
+			case "ln":
+				ctx.lineTo(data[0], data[1]);
+				break;
+			case "qd":
+				ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
+				break;
+			case "bz":
+				ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
+				break;
+			// TODO: acrTo
+			case "cl":
+				ctx.closePath();
+			}
+		}
+	}
+	
 /**
  * 
  */
@@ -183,6 +211,23 @@ canvas.Rectangle = zk.$extends(canvas.Shape, {
 			&& x < sx + this.obj.w 
 			&& sy < y 
 			&& y < sy + this.obj.h;
+	},
+	paint_: function (cvs) {
+		var r = this.obj;
+		switch(cvs._drwTp){
+		case "none":
+			break;
+		case "stroke":
+			cvs._ctx.strokeRect(r.x, r.y, r.w, r.h);
+			break;
+		case "both":
+			cvs._ctx.fillRect(r.x, r.y, r.w, r.h); // fill first, so border stands out
+			cvs._ctx.strokeRect(r.x, r.y, r.w, r.h);
+			break;
+		case "fill":
+		default:
+			cvs._ctx.fillRect(r.x, r.y, r.w, r.h);
+		}
 	}
 	
 });
@@ -295,6 +340,31 @@ canvas.Path = zk.$extends(canvas.Shape, {
 		if(isNaN(x) || isNaN(y)) 
 			return false;
 		return _getPathCrossing(this, x, y) % 2 != 0;
+	},
+	paint_: function (cvs) {
+		// mimic path drawing based on data
+		this._drawPath(cvs);
+		
+		var ctx = cvs._ctx;
+		
+		switch(cvs._drwTp){
+		case "none":
+			break;
+		case "stroke":
+			ctx.stroke();
+			break;
+		case "both":
+			ctx.fill();
+			ctx.stroke();
+			break;
+		case "fill":
+		default:
+			ctx.fill();
+		}
+		ctx.beginPath();
+	},
+	_drawPath: function (cvs) {
+		_drawPath(cvs, this.obj);
 	},
 	// copy object data from path
 	_copyObj: function (path) {

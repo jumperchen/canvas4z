@@ -1,0 +1,11 @@
+<?page title="Drawable x Drawing Style Test" contentType="text/html;charset=UTF-8"?>
+<zk>
+	<window title="Mix Test" border="normal" 
+		apply="org.zkoss.canvas.test.TestCaseController">
+		<grid id="grid">
+			<columns />
+			<rows />
+		</grid>
+		<image id="img" src="img/laughing_man_100px.png" visible="false" />
+	</window>
+</zk>
