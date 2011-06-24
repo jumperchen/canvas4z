@@ -29,9 +29,7 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 		case "text":
 			return zk.copy(new canvas.Text(), drw);
 		case "comp":
-			// TODO: introduce composite drawable
-			//this._paintComposite(drw.obj);
-			break;
+			return zk.copy(new canvas.Composite(), drw);
 		case "img":
 			return zk.copy(new canvas.ImageSnapshot(), drw);
 		case "cvs":
@@ -151,137 +149,10 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		drw.paint_(this);
 		this._unapplyLocalState();
 	},
-	/*
-	_paintRect: function(rect) {
-		switch(this._drwTp){
-		case "none":
-			break;
-		case "stroke":
-			this._ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
-			break;
-		case "both":
-			this._ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-			this._ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
-			break;
-		case "fill":
-		default:
-			this._ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-		}
-	},
-	_paintPath: function(path) {
-		// mimic path drawing based on data
-		this._drawPath(path);
-		
-		switch(this._drwTp){
-		case "none":
-			break;
-		case "stroke":
-			this._ctx.stroke();
-			break;
-		case "both":
-			this._ctx.fill();
-			this._ctx.stroke();
-			break;
-		case "fill":
-		default:
-			this._ctx.fill();
-		}
-		this._ctx.beginPath();
-	},
-	*/
-	_drawPath: function(path) {
-		var segments = path.sg;
-		this._ctx.beginPath();
-		
-		for (var i = 0, len = segments.length; i < len; i++){
-			var data = segments[i].dt;
-			switch(segments[i].tp){
-			case "mv":
-				this._ctx.moveTo(data[0], data[1]);
-				break;
-			case "ln":
-				this._ctx.lineTo(data[0], data[1]);
-				break;
-			case "qd":
-				this._ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
-				break;
-			case "bz":
-				this._ctx.bezierCurveTo(
-						data[0], data[1], data[2], data[3], data[4], data[5]);
-				break;
-			// TODO: acrTo
-			case "cl":
-				this._ctx.closePath();
-			}
-		}
-	},
-	/*
-	_paintText: function(text) {
-		switch(this._drwTp){
-		case "none":
-			break;
-		case "stroke":
-			this._strkTxt(text);
-			break;
-		case "both":
-			this._filTxt(text);
-			this._strkTxt(text);
-			break;
-		case "fill":
-		default:
-			this._filTxt(text);
-		}
-	},
-	_strkTxt: function(text) {
-		// TODO: simplify
-		if (this._txtMxW < 0)
-			this._ctx.strokeText(text.t, text.x, text.y);
-		else
-			this._ctx.strokeText(text.t, text.x, text.y, this._txtMxW);
-	},
-	_filTxt: function(text) {
-		// TODO: simplify
-		if (this._txtMxW < 0)
-			this._ctx.fillText(text.t, text.x, text.y);
-		else
-			this._ctx.fillText(text.t, text.x, text.y, this._txtMxW);
-	},
-	*/
-	_paintComposite: function (comp) {
+	_paintComposite: function (comp) { // TODO: move to Composite
 		if (comp)
 			for (var i = 0, len = comp.length; i < len; i++)
 				this._paint(comp[i]);
-	},
-	// TODO: also add image snapshot class
-	_paintImage: function(img){
-		this._paintSnapshot(img, jq('#' + img.cnt));
-	},
-	// TODO: also add canvas snapshot class
-	_paintCanvas: function(cvs){
-		this._paintSnapshot(cvs, jq('#' + cvs.cnt));
-	},
-	_paintSnapshot: function(obj, img){
-		// TODO: check argument
-		if(obj.sx)
-			this._ctx.drawImage(img[0], obj.sx, obj.sy, obj.sw, obj.sh, 
-					obj.dx, obj.dy, obj.dw, obj.dh);
-		else if(obj.dw)
-			this._ctx.drawImage(img[0], obj.dx, obj.dy, obj.dw, obj.dh);
-		else
-			this._ctx.drawImage(img[0], obj.dx, obj.dy);
-		// TODO: should we preload the image?
-		/*
-		var c = this._ctx;
-		img.load(function() {
-			if(obj.sx)
-				c.drawImage(img[0], obj.sx, obj.sy, obj.sw, obj.sh, 
-						obj.dx, obj.dy, obj.dw, obj.dh);
-			else if(obj.dw)
-				c.drawImage(img[0], obj.dx, obj.dy, obj.dw, obj.dh);
-			else
-				c.drawImage(img[0], obj.dx, obj.dy);
-		});
-		*/
 	},
 	// state management helper //
 	_applyLocalState: function (st) {
@@ -302,7 +173,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 			ctx.setTransform(trns[0], trns[1], trns[2], trns[3], trns[4], trns[5]);
 		}
 		if(st.clp) { // clipping
-			this._drawPath(st.clp.obj); // TODO: call on path function
+			canvas.Path.doPath(this, st.clp.obj);
 			ctx.clip();
 			ctx.beginPath();
 		}

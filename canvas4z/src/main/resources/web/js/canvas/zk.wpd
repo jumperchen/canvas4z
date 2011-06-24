@@ -4,6 +4,7 @@
 	<script src="Shape.js" />
 	<script src="Text.js" />
 	<script src="Snapshot.js" />
+	<script src="Composite.js" />
 	<script>//ExplorerCanvas, Copyright 2006 Google Inc.</script>
 	<script src="excanvas.js" browser="ie"/>
 </package>

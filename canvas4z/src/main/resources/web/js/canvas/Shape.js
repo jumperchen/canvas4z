@@ -117,34 +117,6 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 			_getBezierCrossing(x, y, mx, my, x1, y1, cpxb1, cpyb1, cpxa1, cpya1, d);
 	}
 	
-	function _drawPath(cvs, path) {
-		var sgs = path.sg,
-			ctx = cvs._ctx;
-		ctx.beginPath();
-		
-		for (var i = 0, len = sgs.length; i < len; i++) {
-			var sg = sgs[i],
-				data = sg.dt;
-			switch(sg.tp){
-			case "mv":
-				ctx.moveTo(data[0], data[1]);
-				break;
-			case "ln":
-				ctx.lineTo(data[0], data[1]);
-				break;
-			case "qd":
-				ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
-				break;
-			case "bz":
-				ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
-				break;
-			// TODO: acrTo
-			case "cl":
-				ctx.closePath();
-			}
-		}
-	}
-	
 /**
  * 
  */
@@ -364,7 +336,7 @@ canvas.Path = zk.$extends(canvas.Shape, {
 		ctx.beginPath();
 	},
 	_drawPath: function (cvs) {
-		_drawPath(cvs, this.obj);
+		canvas.Path.doPath(cvs, this.obj);
 	},
 	// copy object data from path
 	_copyObj: function (path) {
@@ -377,6 +349,39 @@ canvas.Path = zk.$extends(canvas.Shape, {
 			this.obj.sg[i].dt = [];
 			for(var j = sg1[i].dt.length; j-- ;)
 				this.obj.sg[i].dt[j] = sg1[i].dt[j];
+		}
+	}
+	
+},{
+	
+	/**
+	 * 
+	 */
+	doPath: function (cvs, pathobj) {
+		var sgs = pathobj.sg,
+			ctx = cvs._ctx;
+		ctx.beginPath();
+		
+		for (var i = 0, len = sgs.length; i < len; i++) {
+			var sg = sgs[i],
+				data = sg.dt;
+			switch(sg.tp){
+			case "mv":
+				ctx.moveTo(data[0], data[1]);
+				break;
+			case "ln":
+				ctx.lineTo(data[0], data[1]);
+				break;
+			case "qd":
+				ctx.quadraticCurveTo(data[0], data[1], data[2], data[3]);
+				break;
+			case "bz":
+				ctx.bezierCurveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
+				break;
+			// TODO: acrTo
+			case "cl":
+				ctx.closePath();
+			}
 		}
 	}
 	
