@@ -29,4 +29,4 @@ canvas.Composite = zk.$extends(canvas.Drawable, {
 	
 });
 
-}();
+})();

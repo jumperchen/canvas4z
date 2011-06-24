@@ -18,7 +18,8 @@ canvas.Snapshot = zk.$extends(canvas.Drawable, {
 	
 	//@Override
 	contains: function (x, y) {
-		// TODO
+		// TODO: just range check
+		return false;
 	},
 	paint_: function (cvs) {
 		var obj = this.obj,
