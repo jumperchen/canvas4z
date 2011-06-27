@@ -60,7 +60,7 @@ public class Path extends Shape {
 	@Override
 	public String getType() {
 		// This value must match the setting in Canvas.js #_paint
-		return "path";
+		return "canvas.Path";
 	}
 	
 	@SuppressWarnings("unchecked")

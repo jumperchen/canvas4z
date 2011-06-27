@@ -278,9 +278,9 @@ canvas.Path = zk.$extends(canvas.Shape, {
 	 */
 	transform: function (m) {
 		var sg = this.obj.sg;
-		for(var i=sg.length;i--;){
+		for (var i = sg.length; i--;) {
 			var dt = sg[i].dt;
-			for(var j=(dt.length)/2;j--;){
+			for (var j = (dt.length)/2; j--;) {
 				var x2 = m[0]*dt[2*j] + m[2]*dt[2*j+1] + m[4];
 				dt[2*j+1] = m[1]*dt[2*j] + m[3]*dt[2*j+1] + m[5];
 				dt[2*j] = x2;
@@ -294,18 +294,21 @@ canvas.Path = zk.$extends(canvas.Shape, {
 		this.transform([a,0,0,b,0,0]);
 	},
 	/**
-	 * Translates the path
+	 * Translates the path.
 	 */
 	translate: function (dx, dy) {
 		this.transform([1,0,0,1,dx,dy]);
 	},
 	/**
-	 * 
+	 * Clones the path.
 	 */
 	clone: function () {
+		return new canvas.Path().import_(this);
+		/*
 		var p2 = new canvas.Path();
 		p2._copyObj(this);
 		p2._copyState(this);
+		*/
 	},
 	//@Override
 	contains: function (x, y) {
@@ -337,10 +340,11 @@ canvas.Path = zk.$extends(canvas.Shape, {
 	},
 	_drawPath: function (cvs) {
 		canvas.Path.doPath(cvs, this.obj);
-	},
+	}
+	/*
 	// copy object data from path
 	_copyObj: function (path) {
-		// TODO: may use zk.copy
+		// TODO: remove
 		this.obj.sg = [];
 		var sg1 = path.obj.sg;
 		for(var i = sg1.length; i--;){
@@ -351,6 +355,7 @@ canvas.Path = zk.$extends(canvas.Shape, {
 				this.obj.sg[i].dt[j] = sg1[i].dt[j];
 		}
 	}
+	*/
 	
 },{
 	

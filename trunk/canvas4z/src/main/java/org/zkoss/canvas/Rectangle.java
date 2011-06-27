@@ -70,7 +70,7 @@ public class Rectangle extends Shape {
 	@Override
 	public String getType() {
 		// This value must match the setting in Canvas.js #_paint
-		return "rect";
+		return "canvas.Rectangle";
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -44,7 +44,7 @@ public class CanvasSnapshot extends Snapshot {
 	
 	@Override
 	public String getType() {
-		return "cvs";
+		return "canvas.CanvasSnapshot";
 	}
 
 	@Override

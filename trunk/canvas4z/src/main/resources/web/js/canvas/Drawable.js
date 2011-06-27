@@ -10,7 +10,10 @@
 Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 
 */
-
+(function () {
+	
+	
+	
 /**
  * 
  */
@@ -276,13 +279,52 @@ canvas.Drawable = zk.$extends(zk.Object, {
 		return false;
 	},
 	/**
+	 * Apply state to canvas. Override to skip.
+	 */
+	applyState_: function (cvs) {
+		cvs._applyLocalState(this.state);
+	},
+	/**
+	 * Unapply state to canvas. Override to skip.
+	 */
+	unapplyState_: function (cvs) {
+		cvs._unapplyLocalState();
+	},
+	/**
 	 * Paints the drawable item. Shall be implemented by subclass.
 	 */
-	paint_: function (cvs) {
+	paint_: function (cvs) {},
+	/**
+	 * Imports the data from JSON
+	 */
+	import_: function (drw) {
+		this.importObj_(drw.obj);
+		this.importState_(drw.state);
+		/*
+		this.obj = zk.copy({}, drw.obj);
+		//this.objtp = zk.copy({}, drw.objtp);
+		this.state = zk.copy({}, drw.state);
+		*/
+		return this;
+	},
+	/**
+	 * Imports the drawable object data
+	 */
+	importObj_: function (obj) {
+		this.obj = zk.copy({}, obj);
+		return this;
+	},
+	/**
+	 * Imports the drawable state
+	 */
+	importState_: function (state) {
+		this.state = zk.copy({}, state);
+		return this;
 	},
 	// copy state data from drw
+	/*
 	_copyState: function (drw) {
-		// TODO: may use zk.copy
+		// TODO: remove
 		this.state.dwtp = drw.state.dwtp;
 		this.state.strk = drw.state.strk;
 		this.state.fil  = drw.state.fil;
@@ -309,10 +351,33 @@ canvas.Drawable = zk.$extends(zk.Object, {
 			this.state.trns = null;
 		
 		if(drw.state.clp != null) {
-			this.state.clp = new Path();
+			this.state.clp = new canvas.Path();
 			this.state.clp._copyObj(drw.state.clp);
 		} else
 			this.state.clp = null;
 	}
+	*/
+	
+},{
+	
+	create: function (drw) {
+		if (typeof(drw) == 'string')
+			drw = jq.evalJSON(drw);
+		if (!drw.objtp)
+			return null;
+		eval('var d = new ' + drw.objtp + '()');
+		if (!d)
+			d = new canvas.Drawable();
+		return d.import_(drw);
+	},
+	createAll: function (drws) {
+		if (typeof(drws) == 'string')
+			drws = jq.evalJSON(drws);
+		for (var arr = [], i = 0, len = drws.length; i < len; i++)
+			arr.push(canvas.Drawable.create(drws[i]));
+		return arr;
+	}
 	
 });
+
+})();

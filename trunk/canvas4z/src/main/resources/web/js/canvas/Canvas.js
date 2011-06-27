@@ -12,36 +12,6 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 */
 (function () {
 	
-	// TODO: move to static methods, or make it extensible
-	function _createDrawables(drws) { // TODO: take JSON directly
-		//var arr = [];
-		for (var arr = [], i = 0, len = drws.length; i < len; i++)
-			arr.push(_createDrawable(drws[i]));
-		return arr;
-	}
-	
-	function _createDrawable(drw) { // TODO: take JSON directly
-		switch(drw.objtp){
-		case "rect":
-			return zk.copy(new canvas.Rectangle(), drw);
-		case "path":
-			return zk.copy(new canvas.Path(), drw);
-		case "text":
-			return zk.copy(new canvas.Text(), drw);
-		case "comp":
-			return zk.copy(new canvas.Composite(), drw);
-		case "img":
-			return zk.copy(new canvas.ImageSnapshot(), drw);
-		case "cvs":
-			return zk.copy(new canvas.CanvasSnapshot(), drw);
-		case "vid":
-		default:
-			// unsupported types
-		}
-		// TODO: how to cover custom type
-		return zk.copy(new canvas.Drawable(), drw); // unhandled cases
-	}
-	
 /**
  * The ZK component corresponding to HTML 5 Canvas.
  * While HTML 5 Canvas is a command-based DOM object that allows user to draw
@@ -66,11 +36,11 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	
 	// TODO: rerender upon resize
 	
-	setDrwngs: function (v) {
-		this._drwbls = _createDrawables(jq.evalJSON(v));
+	setDrwngs: function (drwsJSON) {
+		this._drwbls = canvas.Drawable.createAll(drwsJSON);
 	},
 	setAdd: function (drwJSON) {
-		this.add(_createDrawable(jq.evalJSON(drwJSON)));
+		this.add(canvas.Drawable.create(drwJSON));
 	},
 	/**
 	 * Adds a Drawable to canvas.
@@ -91,7 +61,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		return drw;
 	},
 	setInsert: function (idrwJSON) {
-		var idrw = _createDrawable(jq.evalJSON(idrwJSON));
+		var idrw = canvas.Drawable.create(idrwJSON);
 		this.insert(idrw.i, idrw.drw);
 	},
 	/**
@@ -102,7 +72,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		this._repaint();
 	},
 	setReplace: function (idrwJSON) {
-		var idrw = _createDrawable(jq.evalJSON(idrwJSON));
+		var idrw = canvas.Drawable.create(idrwJSON);
 		this.replace(idrw.i, idrw.drw);
 	},
 	/**
@@ -143,17 +113,21 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		for (var i = 0, drws = this._drwbls, len = drws.length; i < len; i++)
 			this._paint(drws[i]);
 	},
-	_paint: function(drw){
+	_paint: function (drw) {
 		// TODO: preload image issue
-		this._applyLocalState(drw.state);
+		//this._applyLocalState(drw.state);
+		drw.applyState_(this);
 		drw.paint_(this);
-		this._unapplyLocalState();
+		drw.unapplyState_(this);
+		//this._unapplyLocalState();
 	},
+	/*
 	_paintComposite: function (comp) { // TODO: move to Composite
 		if (comp)
 			for (var i = 0, len = comp.length; i < len; i++)
 				this._paint(comp[i]);
 	},
+	*/
 	// state management helper //
 	_applyLocalState: function (st) {
 		// save current global state on DOM canvas context

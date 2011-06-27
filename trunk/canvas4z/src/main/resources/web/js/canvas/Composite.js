@@ -16,15 +16,25 @@ Copyright (C) 2011 Potix Corporation. All Rights Reserved.
  */
 canvas.Composite = zk.$extends(canvas.Drawable, {
 	
-	
-	
 	//@Override
+	importObj_: function (obj) {
+		this.obj = canvas.Drawable.createAll(obj);
+		return this;
+	},
 	contains: function (x, y) {
+		//for ()
 		// TODO
 		return false;
 	},
+	applyState_: function (cvs) {
+		// do nothing
+	},
+	unapplyState_: function (cvs) {
+		// do nothing
+	},
 	paint_: function (cvs) {
-		// TODO
+		for (var i = 0, drws = this.obj, len = drws.length; i < len; i++)
+			cvs._paint(drws[i]);
 	}
 	
 });
