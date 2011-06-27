@@ -16,6 +16,7 @@ Copyright (C) 2011 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.canvas;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,10 +43,18 @@ public class DrawableGroup extends CompositeDrawable {
 	public DrawableGroup(List<Drawable> drawables) {
 		_drawables = drawables;
 	}
-
+	
 	@Override
-	protected List<Drawable> getDrawables() {
+	public List<Drawable> getDrawables() {
 		return _drawables;
+	}
+	
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		List<Drawable> list = new ArrayList<Drawable>();
+		for(Drawable d : _drawables)
+			list.add((Drawable) d.clone());
+		return new DrawableGroup(list);
 	}
 	
 }

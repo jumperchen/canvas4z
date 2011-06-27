@@ -128,7 +128,7 @@ public class TestCaseController extends GenericForwardComposer {
 				new Path().moveTo(50, 25).lineTo(75, 75).lineTo(25, 75).closePath(),
 				Shapes.heart(100),
 				new Text("ZK", 25, 65),
-				new DrawableGroup(Shapes.heart(100), new Text("ZK", 55, 95)),
+				new DrawableGroup(Shapes.heart(100), new Text("ZK", 45, 85)),
 				new ImageSnapshot(img, 0, 0)
 		};
 		
@@ -149,9 +149,16 @@ public class TestCaseController extends GenericForwardComposer {
 		
 		public Drawable applyStyle(Drawable drawable){
 			doStyles(drawable);
-			if(drawable instanceof Text)
-				((Text) drawable).setFont("40px serif");
+			doDefault(drawable);
 			return drawable;
+		}
+		
+		protected void doDefault(Drawable d) {
+			if(d instanceof Text)
+				((Text) d).setFont("40px serif");
+			else if(d instanceof CompositeDrawable)
+				for(Drawable dc : ((CompositeDrawable) d).getDrawables())
+					doDefault(dc);
 		}
 	}
 	

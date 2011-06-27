@@ -27,7 +27,7 @@ import org.zkoss.json.JSONAware;
  */
 public abstract class CompositeDrawable extends Drawable {
 	
-	protected abstract List<Drawable> getDrawables();
+	public abstract List<Drawable> getDrawables();
 	
 	@SuppressWarnings("unchecked")
 	@Override
