@@ -22,8 +22,9 @@ canvas.Composite = zk.$extends(canvas.Drawable, {
 		return this;
 	},
 	contains: function (x, y) {
-		//for ()
-		// TODO
+		for (var drws = this.obj, i = drws.length, d; i--;) 
+			if ((d = drws[i]) && d.slbl && d.contains(x, y))
+				return true; // TODO: find a way to return index
 		return false;
 	},
 	paint_: function (cvs) {

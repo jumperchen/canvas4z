@@ -218,7 +218,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 			x = evt.data.pageX - n.offsetLeft,
 			y = evt.data.pageY - n.offsetTop;
 		for (var drws = this._drwbls, i = drws.length, d; i--;) 
-			if ((d = drws[i]) && d.slbl && d.contains(x,y))
+			if ((d = drws[i]) && d.slbl && d.contains(x, y))
 				return i;
 	},
 	doMouseMove_: function (evt) {
