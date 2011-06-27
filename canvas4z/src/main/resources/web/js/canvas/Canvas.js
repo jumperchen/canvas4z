@@ -115,23 +115,14 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	},
 	_paint: function (drw) {
 		// TODO: preload image issue
-		//this._applyLocalState(drw.state);
 		drw.applyState_(this);
 		drw.paint_(this);
 		drw.unapplyState_(this);
-		//this._unapplyLocalState();
 	},
-	/*
-	_paintComposite: function (comp) { // TODO: move to Composite
-		if (comp)
-			for (var i = 0, len = comp.length; i < len; i++)
-				this._paint(comp[i]);
-	},
-	*/
 	// state management helper //
 	_applyLocalState: function (st) {
 		// save current global state on DOM canvas context
-		this._txtMxWBak = this._txtMxW;
+		this._txtMxWBak = this._txtMxW; // TODO: use stack
 		this._drwTpBak = this._drwTp;
 		this._ctx.save();
 		// apply local state to context

@@ -26,12 +26,6 @@ canvas.Composite = zk.$extends(canvas.Drawable, {
 		// TODO
 		return false;
 	},
-	applyState_: function (cvs) {
-		// do nothing
-	},
-	unapplyState_: function (cvs) {
-		// do nothing
-	},
 	paint_: function (cvs) {
 		for (var i = 0, drws = this.obj, len = drws.length; i < len; i++)
 			cvs._paint(drws[i]);
