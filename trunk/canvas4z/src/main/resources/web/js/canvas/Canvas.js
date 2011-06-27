@@ -30,9 +30,9 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	
 	// extended drawing states
 	_drwTp: "fill",
-	_drwTpBak: "fill",
+	_drwTpBak: [],
 	_txtMxW: -1,
-	_txtMxWBak: -1,
+	_txtMxWBak: [],
 	
 	// TODO: rerender upon resize
 	
@@ -122,8 +122,8 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	// state management helper //
 	_applyLocalState: function (st) {
 		// save current global state on DOM canvas context
-		this._txtMxWBak = this._txtMxW; // TODO: use stack
-		this._drwTpBak = this._drwTp;
+		this._txtMxWBak.push(this._txtMxW);
+		this._drwTpBak.push(this._drwTp);
 		this._ctx.save();
 		// apply local state to context
 		this._setDOMContextState(st);
@@ -162,8 +162,8 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	},
 	_unapplyLocalState: function () {
 		// restore global state
-		this._txtMxW = this._txtMxWBak;
-		this._drwTp = this._drwTpBak;
+		this._txtMxW = this._txtMxWBak.pop();
+		this._drwTp = this._drwTpBak.pop();
 		this._ctx.restore();
 	},
 	//@Override
