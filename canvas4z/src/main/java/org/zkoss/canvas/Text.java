@@ -101,7 +101,7 @@ public class Text extends Drawable {
 	
 	@Override
 	public String getType() {
-		return "text";
+		return "canvas.Text";
 	}
 	
 	@Override

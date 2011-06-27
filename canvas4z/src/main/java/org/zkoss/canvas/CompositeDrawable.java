@@ -40,7 +40,7 @@ public abstract class CompositeDrawable extends Drawable {
 	
 	@Override
 	public String getType() {
-		return "comp";
+		return "canvas.Composite";
 	}
 	
 }

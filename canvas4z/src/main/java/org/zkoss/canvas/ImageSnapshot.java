@@ -48,7 +48,7 @@ public class ImageSnapshot extends Snapshot {
 	
 	@Override
 	public String getType() {
-		return "img";
+		return "canvas.ImageSnapshot";
 	}
 	
 	@Override

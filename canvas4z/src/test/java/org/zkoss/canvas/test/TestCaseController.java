@@ -128,6 +128,7 @@ public class TestCaseController extends GenericForwardComposer {
 				new Path().moveTo(50, 25).lineTo(75, 75).lineTo(25, 75).closePath(),
 				Shapes.heart(100),
 				new Text("ZK", 25, 65),
+				new DrawableGroup(Shapes.heart(100), new Text("ZK", 55, 95)),
 				new ImageSnapshot(img, 0, 0)
 		};
 		
