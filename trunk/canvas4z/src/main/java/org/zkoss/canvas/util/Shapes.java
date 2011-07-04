@@ -16,7 +16,7 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.canvas.util;
 
-import org.zkoss.canvas.Path;
+import org.zkoss.canvas.drawable.Path;
 
 /**
  * Predefined Shapes

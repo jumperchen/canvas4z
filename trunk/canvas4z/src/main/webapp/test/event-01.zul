@@ -1,0 +1,16 @@
+<zk>
+	<window apply="org.zkoss.canvas.test.EventTestController">
+		<canvas id="cvs" width="500px" height="500px" />
+		<separator bar="true" />
+		Selected:
+		<div id="div" />
+		<popup id="popup">
+			<div>
+				Mouse in: <label id="lbi" />
+			</div>
+			<div>
+				Mouse Out: <label id="lbo" />
+			</div>
+		</popup>
+	</window>
+</zk>

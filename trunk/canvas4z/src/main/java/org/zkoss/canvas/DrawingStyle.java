@@ -1,15 +1,15 @@
-/* Drawable.java
+/* DrawingStyle.java
 
 {{IS_NOTE
-	Purpose:
-		
-	Description:
-		
-	History:
-		May 13, 2010 11:55:17 AM , Created by simon
+ Purpose:
+  
+ Description:
+  
+ History:
+  Jul 2, 2011 9:48:31 PM , Created by simonpai
 }}IS_NOTE
 
-Copyright (C) 2010 Potix Corporation. All Rights Reserved.
+Copyright (C) 2011 Potix Corporation. All Rights Reserved.
 
 {{IS_RIGHT
 }}IS_RIGHT
@@ -17,86 +17,42 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 package org.zkoss.canvas;
 
 import java.awt.geom.Path2D;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
+
+import org.zkoss.canvas.drawable.Path;
 import org.zkoss.json.JSONAware;
 import org.zkoss.json.JSONObject;
 
 /**
- * @author simon
- *
+ * 
+ * @author simonpai
  */
-public abstract class Drawable implements JSONAware, Cloneable {
+public class DrawingStyle implements JSONAware {
 	
-	private Attrs _state;
-	private java.awt.Shape _clipping;
-	protected boolean _selectable = false;
+	private Attrs _attrs;
+	private java.awt.Shape _clipping; // cached clipping
 	
 	/**
-	 * Subclass constructor should call super().
+	 * Create an empty DrawingStyle
 	 */
-	public Drawable(){
-		_state = new Attrs();
+	public DrawingStyle() {
+		_attrs = new Attrs();
 	}
 	
 	/**
-	 * Returns the type of Drawable to specify how the resource should be drawn
-	 * on client side
+	 * Create a cloned DrawingStyle from another.
 	 */
-	public abstract String getType(); // The value must match the setting in Canvas.js #_paint // TODO: make it customizable
-	
-	/**
-	 * Returns true if selectable.
-	 */
-	public boolean isSelectable() {
-		return _selectable;
+	public DrawingStyle(DrawingStyle style) {
+		_attrs = new Attrs(style._attrs);
 	}
 	
-	/**
-	 * Set whether this Drawable is selectable.
-	 */
-	public Drawable setSelectable(boolean selectable) {
-		_selectable = selectable;
-		return this;
-	}
-	
-	/**
-	 * Returns a JSON Object representing ONLY the shape.
-	 * The drawing state is covered in toJSONString()
-	 */
-	public abstract JSONAware getShapeJSONObject();
-	
-	public String toJSONString() {
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("objtp", getType());
-		map.put("obj", getShapeJSONObject());
-		map.put("state", _state);
-		if(_selectable)
-			map.put("slbl", true);
-		return JSONObject.toJSONString(map);
-	}
-	
-	@Override
-	public Object clone() throws CloneNotSupportedException {
-		return super.clone();
-	}
-	
-	
-
-	/* state management */
-	/**
-	 * Uses the state from another Drawable. 
-	 */
-	public void copyStateFrom(Drawable drawable){
-		_state = new Attrs(drawable._state);
-	}
-	
+	// state management //
 	/**
 	 * Removes all drawing styles.
 	 */
-	public Drawable removeAllStyles(){
-		for(AttrDef d : AttrDef.values()) remove(d);
+	public DrawingStyle clear() {
+		for(AttrDef d : AttrDef.values()) 
+			remove(d);
 		return this;
 	}
 	
@@ -127,7 +83,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Sets the drawing type. 
 	 * @param type: Default value is FILL.
 	 */
-	public Drawable setDrawingType(String value){
+	public DrawingStyle setDrawingType(String value){
 		set(AttrDef.DRAWING_TYPE, value);
 		return this;
 	}
@@ -135,7 +91,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes the drawing type setting.
 	 */
-	public Drawable removeDrawingType(){
+	public DrawingStyle removeDrawingType(){
 		remove(AttrDef.DRAWING_TYPE);
 		return this;
 	}
@@ -160,11 +116,9 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Sets the transformation matrix. Note that the default value of m11 and 
 	 * m22 are 1, while the rests are 0.
 	 */
-	public Drawable setTransformation(double m11, double m12, double m21, 
-			double m22, double dx, double dy){
-		
-		double[] newMatrix = {m11, m12, m21, m22, dx, dy};
-		return setTransformation(newMatrix);
+	public DrawingStyle setTransformation(double m11, double m12, double m21, 
+			double m22, double dx, double dy) {
+		return setTransformation(new double[] {m11, m12, m21, m22, dx, dy});
 	}
 	
 	/**
@@ -172,23 +126,23 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * @param value: must be a double Array of length 6, with entries
 	 * representing m11, m12, m21, m22, dx, dy respectively. 
 	 */
-	public Drawable setTransformation(double[] value){
+	public DrawingStyle setTransformation(double[] value){
 		boolean isDefault = true;
-		for(int i=0; i<6; i++) {
-			if(value[i] != Transformation.DEFAULT[i]) isDefault = false;
-		}
-		if(isDefault) {
+		for(int i = 0; i < 6; i++)
+			if(value[i] != Transformation.DEFAULT[i]) 
+				isDefault = false;
+		
+		if(isDefault)
 			remove(AttrDef.TRANSFORMATION);
-		} else {
+		else
 			set(AttrDef.TRANSFORMATION, value);
-		}
 		return this;
 	}
 	
 	/**
 	 * Removes the transformation setting.
 	 */
-	public Drawable removeTransformation(){
+	public DrawingStyle removeTransformation(){
 		remove(AttrDef.TRANSFORMATION);
 		return this;
 	}
@@ -207,7 +161,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Sets the clipping region. 
 	 * @param clipping: Can be any java.awt.Shape
 	 */
-	public Drawable setClipping(java.awt.Shape shape){
+	public DrawingStyle setClipping(java.awt.Shape shape){
 		// Java 2D uses Bezier curve to simulate arc when passing into Path2D
 		// so passing an Arc here will turn it into a path formed by Bezier curves
 		_clipping = shape;
@@ -218,7 +172,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes the clipping region setting.
 	 */
-	public Drawable removeClipping(){
+	public DrawingStyle removeClipping(){
 		_clipping = null;
 		remove(AttrDef.CLIPPING);
 		return this;
@@ -239,7 +193,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Sets strokeStyle as a CSS color.
 	 * @param cssColor: must be a valid CSS color string.
 	 */
-	public Drawable setStrokeStyle(String cssColor){
+	public DrawingStyle setStrokeStyle(String cssColor){
 		set(AttrDef.STROKE_STYLE, cssColor);
 		return this;
 	}
@@ -252,7 +206,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Removes strokeStyle setting.
 	 * @return
 	 */
-	public Drawable removeStrokeStyle(){
+	public DrawingStyle removeStrokeStyle(){
 		remove(AttrDef.STROKE_STYLE);
 		return this;
 	}
@@ -272,7 +226,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Sets fillStyle as a CSS color.
 	 * @param cssColor: must be a valid CSS color string.
 	 */
-	public Drawable setFillStyle(String cssColor){
+	public DrawingStyle setFillStyle(String cssColor){
 		set(AttrDef.FILL_STYLE, cssColor);
 		return this;
 	}
@@ -285,7 +239,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Removes fillStyle setting.
 	 * @return
 	 */
-	public Drawable removeFillStyle(){
+	public DrawingStyle removeFillStyle(){
 		remove(AttrDef.FILL_STYLE);
 		return this;
 	}
@@ -305,8 +259,9 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * @param alpha: must be in range [0,1].
 	 * Any value less then 0 or greater than 1 is ignored.
 	 */
-	public Drawable setAlpha(double value){
-		if(value < 0 || value > 1) return this;
+	public DrawingStyle setAlpha(double value){
+		if(value < 0 || value > 1) 
+			return this;
 		set(AttrDef.ALPHA, value);
 		return this;
 	}
@@ -314,7 +269,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes alpha setting.
 	 */
-	public Drawable removeAlpha(){
+	public DrawingStyle removeAlpha(){
 		remove(AttrDef.ALPHA);
 		return this;
 	}
@@ -332,7 +287,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Sets line width. Default value is 1.
 	 */
-	public Drawable setLineWidth(double value){
+	public DrawingStyle setLineWidth(double value){
 		set(AttrDef.LINE_WIDTH, value);
 		return this;
 	}
@@ -340,7 +295,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes line width setting
 	 */
-	public Drawable removeLineWidth(){
+	public DrawingStyle removeLineWidth(){
 		remove(AttrDef.LINE_WIDTH);
 		return this;
 	}
@@ -369,7 +324,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Sets line cap type. Default value is BUTT.
 	 */
-	public Drawable setLineCap(String value){
+	public DrawingStyle setLineCap(String value){
 		set(AttrDef.LINE_CAP, value);
 		return this;
 	}
@@ -377,7 +332,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes line cap setting.
 	 */
-	public Drawable removeLineCap(){
+	public DrawingStyle removeLineCap(){
 		remove(AttrDef.LINE_CAP);
 		return this;
 	}
@@ -406,7 +361,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Sets line join type. Default value is MITER 
 	 */
-	public Drawable setLineJoin(String value){
+	public DrawingStyle setLineJoin(String value){
 		set(AttrDef.LINE_JOIN, value);
 		return this;
 	}
@@ -414,7 +369,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes line join setting.
 	 */
-	public Drawable removeLineJoin(){
+	public DrawingStyle removeLineJoin(){
 		remove(AttrDef.LINE_JOIN);
 		return this;
 	}
@@ -432,7 +387,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Sets miter limit. Default value is 10.
 	 */
-	public Drawable setMiterLimit(double value){
+	public DrawingStyle setMiterLimit(double value){
 		set(AttrDef.MITER_LIMIT, value);
 		return this;
 	}
@@ -440,7 +395,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes miter limit setting.
 	 */
-	public Drawable removeMiterLimit(){
+	public DrawingStyle removeMiterLimit(){
 		remove(AttrDef.MITER_LIMIT);
 		return this;
 	}
@@ -465,7 +420,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Sets shadow offset.
 	 */
-	public Drawable setShadowOffset(double x, double y){
+	public DrawingStyle setShadowOffset(double x, double y){
 		set(AttrDef.SHADOW_OFFSET_X, x);
 		set(AttrDef.SHADOW_OFFSET_Y, y);
 		return this;
@@ -474,7 +429,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes shadow offset setting.
 	 */
-	public Drawable removeShadowOffset(){
+	public DrawingStyle removeShadowOffset(){
 		remove(AttrDef.SHADOW_OFFSET_X);
 		remove(AttrDef.SHADOW_OFFSET_Y);
 		return this;
@@ -493,7 +448,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Sets shadow blur value.
 	 */
-	public Drawable setShadowBlur(double value){
+	public DrawingStyle setShadowBlur(double value){
 		set(AttrDef.SHADOW_BLUR, value);
 		return this;
 	}
@@ -501,7 +456,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes shadow blur setting.
 	 */
-	public Drawable removeShadowBlur(){
+	public DrawingStyle removeShadowBlur(){
 		remove(AttrDef.SHADOW_BLUR);
 		return this;
 	}
@@ -520,7 +475,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Sets shadow color
 	 * @param cssColor: must be a valid css color
 	 */
-	public Drawable setShadowColor(String cssColor){
+	public DrawingStyle setShadowColor(String cssColor){
 		set(AttrDef.SHADOW_COLOR, cssColor);
 		return this;
 	}
@@ -528,7 +483,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes shadow color setting.
 	 */
-	public Drawable removeShadowColor(){
+	public DrawingStyle removeShadowColor(){
 		remove(AttrDef.SHADOW_COLOR);
 		return this;
 	}
@@ -571,7 +526,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Drawable.Composite, or a string that specifies a vendor-specific
 	 * composite operation. (See HTML Canvas doc)
 	 */
-	public Drawable setComposite(String value){
+	public DrawingStyle setComposite(String value){
 		set(AttrDef.COMPOSITE, value);
 		return this;
 	}
@@ -579,7 +534,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes the composite setting.
 	 */
-	public Drawable removeComposite(){
+	public DrawingStyle removeComposite(){
 		remove(AttrDef.COMPOSITE);
 		return this;
 	}
@@ -597,7 +552,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Sets the font.
 	 */
-	public Drawable setFont(String value){
+	public DrawingStyle setFont(String value){
 		set(AttrDef.FONT, value);
 		return this;
 	}
@@ -605,7 +560,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes font setting.
 	 */
-	public Drawable removeFont(){
+	public DrawingStyle removeFont(){
 		remove(AttrDef.FONT);
 		return this;
 	}
@@ -637,7 +592,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Sets text align.
 	 * @param value: 
 	 */
-	public Drawable setTextAlign(String value){
+	public DrawingStyle setTextAlign(String value){
 		set(AttrDef.TEXT_ALIGN, value);
 		return this;
 	}
@@ -645,7 +600,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes text align
 	 */
-	public Drawable removeTextAlign(){
+	public DrawingStyle removeTextAlign(){
 		remove(AttrDef.TEXT_ALIGN);
 		return this;
 	}
@@ -677,7 +632,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Sets text baseline.
 	 */
-	public Drawable setTextBaseline(String value){
+	public DrawingStyle setTextBaseline(String value){
 		set(AttrDef.TEXT_BASELINE, value);
 		return this;
 	}
@@ -685,7 +640,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes text baseline setting
 	 */
-	public Drawable removeTextBaseline(){
+	public DrawingStyle removeTextBaseline(){
 		remove(AttrDef.TEXT_BASELINE);
 		return this;
 	}
@@ -707,7 +662,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	 * Sets text max width. Default value is -1.
 	 * @param value: Any value less than 0 means no limit on maximal width
 	 */
-	public Drawable setMaxWidth(double value){
+	public DrawingStyle setMaxWidth(double value){
 		set(AttrDef.TEXT_MAX_WIDTH, value);
 		return this;
 	}
@@ -715,35 +670,34 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Removes text max width limit
 	 */
-	public Drawable removeMaxWidth(){
+	public DrawingStyle removeMaxWidth(){
 		remove(AttrDef.TEXT_MAX_WIDTH);
 		return this;
 	}
-	
-	/* end of state management */
-	
+	// end of state management //
 	
 	
-	/* helper */
+	
+	// helper //
 	private Object get(AttrDef def){
 		return get(def, true);
 	}
 	
 	private Object get(AttrDef def, boolean returnDefaultValue){
-		Object result = _state.get(def.getKey());
+		Object result = _attrs.get(def.getKey());
 		return (returnDefaultValue && result == null) ? def.getDefault() : result;
 	}
 	
 	@SuppressWarnings("unchecked")
 	private void set(AttrDef def, Object value){
 		if(value.equals(def.getDefault()))
-			_state.remove(def.getKey());
+			_attrs.remove(def.getKey());
 		else
-			_state.put(def.getKey(), value);
+			_attrs.put(def.getKey(), value);
 	}
 	
 	private Object remove(AttrDef def){
-		return _state.remove(def.getKey());
+		return _attrs.remove(def.getKey());
 	}
 	
 	
@@ -761,9 +715,9 @@ public abstract class Drawable implements JSONAware, Cloneable {
 		
 		// copy values from attrs, always overwrites
 		@SuppressWarnings("unchecked")
-		private void copyFrom(Attrs attr2){
+		private void copyFrom(Attrs attr2) {
 			Iterator<Entry<String, Object>> itr = attr2.entrySet().iterator();
-			while(itr.hasNext()){
+			while(itr.hasNext()) {
 				Entry<String, Object> e = itr.next();
 				put(e.getKey(), e.getValue());
 			}
@@ -814,4 +768,10 @@ public abstract class Drawable implements JSONAware, Cloneable {
 			return _defaultValue;
 		}
 	}
+	
+	@Override
+	public String toJSONString() {
+		return _attrs.toJSONString();
+	}
+	
 }

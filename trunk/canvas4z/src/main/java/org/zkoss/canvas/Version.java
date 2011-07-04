@@ -17,11 +17,14 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 package org.zkoss.canvas;
 
 /**
+ * 
  * @author simon
- *
  */
 public class Version {
-	/** The version UID used to identify the resources.
-	  */
-	public static final String UID = "0.8.2";
+	
+	/** 
+	 * The version UID used to identify the resources.
+	 */
+	public static final String UID = "0.9.0";
+	
 }

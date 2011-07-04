@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.zkoss.canvas;
+package org.zkoss.canvas.drawable;
 
 import org.zkoss.json.JSONAware;
 import org.zkoss.json.JSONObject;
