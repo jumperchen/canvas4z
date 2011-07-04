@@ -22,6 +22,8 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	obj: null,
 	state: null,
 	
+	// TODO: extract drawing style info
+	
 	$init: function () {
 		this.state = new Object();
 	},
@@ -300,11 +302,7 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	import_: function (drw) {
 		this.importObj_(drw.obj);
 		this.importState_(drw.state);
-		/*
-		this.obj = zk.copy({}, drw.obj);
-		//this.objtp = zk.copy({}, drw.objtp);
-		this.state = zk.copy({}, drw.state);
-		*/
+		this.slbl = drw.slbl;
 		return this;
 	},
 	/**

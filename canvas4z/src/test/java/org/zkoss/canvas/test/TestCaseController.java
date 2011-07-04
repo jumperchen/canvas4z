@@ -18,16 +18,22 @@ package org.zkoss.canvas.test;
 
 import org.zkoss.zul.*;
 import org.zkoss.canvas.*;
-import org.zkoss.canvas.Drawable.DrawingType;
-import org.zkoss.canvas.Drawable.LineJoin;
+import org.zkoss.canvas.drawable.CompositeDrawable;
+import org.zkoss.canvas.drawable.Drawable;
+import org.zkoss.canvas.drawable.DrawableGroup;
+import org.zkoss.canvas.drawable.ImageSnapshot;
+import org.zkoss.canvas.drawable.Path;
+import org.zkoss.canvas.drawable.Rectangle;
+import org.zkoss.canvas.drawable.Text;
 import org.zkoss.canvas.util.Shapes;
+import org.zkoss.canvas.DrawingStyle.*;
 
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.util.GenericForwardComposer;
 
 /**
+ * 
  * @author simon
- *
  */
 @SuppressWarnings("serial")
 public class TestCaseController extends GenericForwardComposer {
@@ -50,7 +56,7 @@ public class TestCaseController extends GenericForwardComposer {
 			public String getName() {
 				return "No Style";
 			}
-			public void doStyles(Drawable d) {
+			public void doStyles(DrawingStyle s) {
 				// do nothing
 			}
 		},
@@ -58,12 +64,12 @@ public class TestCaseController extends GenericForwardComposer {
 			public String getName() {
 				return "Color, Alpha";
 			}
-			public void doStyles(Drawable d) {
-				d.removeAllStyles()
-					.setDrawingType(DrawingType.BOTH)
-					.setStrokeStyle("#00FFFF")
-					.setFillStyle("#FF00FF")
-					.setAlpha(0.3);
+			public void doStyles(DrawingStyle s) {
+				s.clear();
+				s.setDrawingType(DrawingType.BOTH);
+				s.setStrokeStyle("#00FFFF");
+				s.setFillStyle("#FF00FF");
+				s.setAlpha(0.3);
 			}
 		},
 		// TODO gradient, pattern
@@ -71,45 +77,45 @@ public class TestCaseController extends GenericForwardComposer {
 			public String getName() {
 				return "Line Style";
 			}
-			public void doStyles(Drawable d) {
-				d.removeAllStyles()
-					.setDrawingType(DrawingType.STROKE)
-					.setLineWidth(5)
-					.setLineJoin(LineJoin.ROUND);
+			public void doStyles(DrawingStyle s) {
+				s.clear();
+				s.setDrawingType(DrawingType.STROKE);
+				s.setLineWidth(5);
+				s.setLineJoin(LineJoin.ROUND);
 			}
 		},
 		new DrawingStyleApplier() {
 			public String getName() {
 				return "Shadow";
 			}
-			public void doStyles(Drawable d) {
-				d.removeAllStyles()
-					.setDrawingType(DrawingType.FILL)
-					.setShadowColor("#FFFF00")
-					.setShadowOffset(20, 20)
-					.setShadowBlur(10);
+			public void doStyles(DrawingStyle s) {
+				s.clear();
+				s.setDrawingType(DrawingType.FILL);
+				s.setShadowColor("#FFFF00");
+				s.setShadowOffset(20, 20);
+				s.setShadowBlur(10);
 			}
 		},
 		new DrawingStyleApplier() {
 			public String getName() {
 				return "Transformation";
 			}
-			public void doStyles(Drawable d) {
+			public void doStyles(DrawingStyle s) {
 				double cos60 = Math.cos(Math.PI/3);
 				double sin60 = Math.sin(Math.PI/3);
-				d.removeAllStyles()
-					.setDrawingType(DrawingType.BOTH)
-					.setTransformation(cos60, sin60, -sin60, cos60, 60, 0);
+				s.clear();
+				s.setDrawingType(DrawingType.BOTH);
+				s.setTransformation(cos60, sin60, -sin60, cos60, 60, 0);
 			}
 		},
 		new DrawingStyleApplier() {
 			public String getName() {
 				return "Clipping";
 			}
-			public void doStyles(Drawable d) {
-				d.removeAllStyles()
-					.setDrawingType(DrawingType.BOTH)
-					.setClipping(new Path().moveTo(0, 0).lineTo(100, 0)
+			public void doStyles(DrawingStyle s) {
+				s.clear();
+				s.setDrawingType(DrawingType.BOTH);
+				s.setClipping(new Path().moveTo(0, 0).lineTo(100, 0)
 							.lineTo(0, 100).closePath());
 			}
 		}
@@ -144,18 +150,18 @@ public class TestCaseController extends GenericForwardComposer {
 	}
 	
 	private abstract class DrawingStyleApplier {
-		public abstract void doStyles(Drawable d);
+		public abstract void doStyles(DrawingStyle s);
 		public abstract String getName();
 		
 		public Drawable applyStyle(Drawable drawable){
-			doStyles(drawable);
+			doStyles(drawable.getDrawingStyle());
 			doDefault(drawable);
 			return drawable;
 		}
 		
 		protected void doDefault(Drawable d) {
 			if(d instanceof Text)
-				((Text) d).setFont("40px serif");
+				d.getDrawingStyle().setFont("40px serif");
 			else if(d instanceof CompositeDrawable)
 				for(Drawable dc : ((CompositeDrawable) d).getDrawables())
 					doDefault(dc);

@@ -14,7 +14,7 @@ Copyright (C) 2011 Potix Corporation. All Rights Reserved.
 {{IS_RIGHT
 }}IS_RIGHT
 */
-package org.zkoss.canvas;
+package org.zkoss.canvas.drawable;
 
 import java.util.ArrayList;
 import java.util.Arrays;

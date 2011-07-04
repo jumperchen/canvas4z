@@ -19,7 +19,7 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 	
 	<version>
 		<version-class>org.zkoss.canvas.Version</version-class>
-		<version-uid>0.8.2</version-uid>
+		<version-uid>0.9.0</version-uid>
 	</version>
 	
 	<component>

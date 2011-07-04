@@ -14,7 +14,7 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 {{IS_RIGHT
 }}IS_RIGHT
 */
-package org.zkoss.canvas;
+package org.zkoss.canvas.drawable;
 
 /**
  * A Path with only line segments.

@@ -20,11 +20,19 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
+import org.zkoss.canvas.drawable.CanvasSnapshot;
+import org.zkoss.canvas.drawable.Drawable;
+import org.zkoss.canvas.drawable.ImageSnapshot;
+import org.zkoss.canvas.drawable.Path;
+import org.zkoss.canvas.drawable.Rectangle;
+import org.zkoss.canvas.drawable.Text;
 import org.zkoss.json.JSONObject;
 import org.zkoss.json.JSONValue;
+import org.zkoss.zk.au.AuRequest;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.sys.ContentRenderer;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.impl.XulElement;
@@ -45,27 +53,20 @@ public class Canvas extends XulElement {
 	
 	private List<Drawable> _drawables;
 	
+	static {
+		addClientEvent(Canvas.class, CanvasMouseEvent.ON_TOOLTIP, CE_REPEAT_IGNORE);
+		addClientEvent(Canvas.class, CanvasMouseEvent.ON_SELECT, 0);
+	}
+	
 	public Canvas() {
 		_drawables = new ArrayList<Drawable>();
 	}
 	
-	/* getter */
 	/**
 	 * Return a list of all drawings in Canvas.
 	 */
 	public List<Drawable> getAllDrawables(){
-		List<Drawable> result = new ArrayList<Drawable>();
-		Iterator<Drawable> itr = _drawables.iterator();
-		while(itr.hasNext())
-			result.add(itr.next());
-		return result; 
-	}
-	
-	/**
-	 * Returns an iterator of Drawable list.
-	 */
-	public Iterator<Drawable> getDrawableIterator(){
-		return _drawables.iterator();
+		return Collections.unmodifiableList(_drawables);
 	}
 	
 	/**
@@ -76,7 +77,6 @@ public class Canvas extends XulElement {
 		return _drawables.get(index);
 	}
 	
-	/* query */
 	/**
 	 * Return true if the list is empty.
 	 */
@@ -91,9 +91,6 @@ public class Canvas extends XulElement {
 		return _drawables.size();
 	}
 	
-	
-	
-	/* operation */
 	/**
 	 * Adds the Drawable object to the end of the list.
 	 */
@@ -125,21 +122,21 @@ public class Canvas extends XulElement {
 	
 	// TODO: delegate other image type
 	/**
-	 * Adds a Image snapshot
+	 * Adds an Image snapshot
 	 */
 	public void add(Image image, double dx, double dy){
 		add(new ImageSnapshot(image, dx, dy));
 	}
 	
 	/**
-	 * Adds a Image snapshot
+	 * Adds an Image snapshot
 	 */
 	public void add(Image image, double dx, double dy, double dw, double dh){
 		add(new ImageSnapshot(image, dx, dy, dw, dh));
 	}
 	
 	/**
-	 * Adds a Image snapshot
+	 * Adds an Image snapshot
 	 */
 	public void add(Image image, double dx, double dy, double dw, double dh,
 			double sx, double sy, double sw, double sh){
@@ -199,21 +196,21 @@ public class Canvas extends XulElement {
 	}
 	
 	/**
-	 * 
+	 * Inserts a Path.
 	 */
 	public void insert(int index, Path2D.Double path){
 		insert(index, new Path(path));
 	}
 	
 	/**
-	 * 
+	 * Inserts a Rectangle.
 	 */
 	public void insert(int index, Rectangle2D.Double rectangle){
 		insert(index, new Rectangle(rectangle));
 	}
 	
 	/**
-	 * 
+	 * Inserts a piece of Text.
 	 */
 	public void insert(int index, String text, double x, double y){
 		insert(index, new Text(text, x, y));
@@ -235,21 +232,21 @@ public class Canvas extends XulElement {
 	}
 	
 	/**
-	 * 
+	 * Replaces a Path.
 	 */
 	public Drawable replace(int index, Path2D.Double path){
 		return replace(index, new Path(path));
 	}
 	
 	/**
-	 * 
+	 * Replaces a Rectangle.
 	 */
 	public Drawable replace(int index, Rectangle2D.Double rectangle){
 		return replace(index, new Rectangle(rectangle));
 	}
 	
 	/**
-	 * 
+	 * Replaces a piece of Text.
 	 */
 	public Drawable replace(int index, String text, double x, double y){
 		return replace(index, new Text(text, x, y));
@@ -257,7 +254,7 @@ public class Canvas extends XulElement {
 	
 	
 	
-	/* helper */
+	// helper //
 	private static Drawable cloneIfPossible(Drawable drawable){
 		/*
 		try {
@@ -267,7 +264,18 @@ public class Canvas extends XulElement {
 		return drawable;
 	}
 	
-	/* super */
+	// service //
+	public void service(AuRequest request, boolean everError) {
+		final String cmd = request.getCommand();
+		if (cmd.equals(CanvasMouseEvent.ON_SELECT) || 
+				cmd.equals(CanvasMouseEvent.ON_TOOLTIP)) {
+			CanvasMouseEvent evt = CanvasMouseEvent.getEvent(request);
+			Events.postEvent(evt);
+		} else 
+			super.service(request, everError);
+	}
+	
+	// super //
 	protected void renderProperties(ContentRenderer renderer) 
 		throws IOException {
 		

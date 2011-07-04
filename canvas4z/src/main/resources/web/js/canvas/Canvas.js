@@ -27,6 +27,8 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	_ctx: null,
 	_drwbls: [],
 	_states: [],
+	_hvi: -1,
+	_sldi: -1,
 	
 	// extended drawing states
 	_drwTp: "fill",
@@ -38,6 +40,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	
 	setDrwngs: function (drwsJSON) {
 		this._drwbls = canvas.Drawable.createAll(drwsJSON);
+		//this._repaint();
 	},
 	setAdd: function (drwJSON) {
 		this.add(canvas.Drawable.create(drwJSON));
@@ -173,9 +176,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		
 		this._cvs = document.createElement("canvas");
 		this._init();
-		
 		this._cvs.id = this.uuid + '-cnt';
-		// TODO: <canvas> zclass
 		
 		this._ctx = this._cvs.getContext("2d");
 		jq(this.$n()).append(this._cvs);
@@ -220,17 +221,42 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		for (var drws = this._drwbls, i = drws.length, d; i--;) 
 			if ((d = drws[i]) && d.slbl && d.contains(x, y))
 				return i;
+		return -1;
 	},
 	doMouseMove_: function (evt) {
-		var i = this._getSelected(evt);
-		if (this._sldi != i) {
-			// TODO: effect
-			this._sldi = i;
+		var i = this._getSelected(evt),
+			pi = this._hvi;
+		
+		if (pi != i) {
+			var	d = i < 0 ? null : this._drwbls[i],
+				pd = pi < 0 ? null : this._drwbls[pi];
+			
+			if (pd && pd.eft)
+				pd.eft.hover(this); // remove hover effect from the previous
+			if (d && d.eft)
+				d.eft.hover(this, true);
+			
+			this.fire('onTooltip', zk.copy(evt.data, {i:i,pi:pi}));
+			this._hvi = i;
 		}
 		this.$supers('doMouseMove_', arguments);
 	},
 	doClick_: function (evt) {
-		// TODO: select
+		var i = this._getSelected(evt),
+			pi = this._sldi;
+		
+		if (pi != i) {
+			var	d = i < 0 ? null : this._drwbls[i],
+				pd = pi < 0 ? null : this._drwbls[pi];
+			
+			if (pd && pd.eft)
+				pd.eft.select(this); // remove hover effect from the previous
+			if (d && d.eft)
+				d.eft.select(this, true);
+			
+			this.fire('onSelect', zk.copy(evt.data, {i:i,pi:pi}));
+			this._sldi = i;
+		}
 		this.$supers('doClick_', arguments);
 	},
 	getZclass: function () {

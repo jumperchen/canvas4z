@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.zkoss.canvas;
+package org.zkoss.canvas.drawable;
 
 import org.zkoss.zul.Image;
 

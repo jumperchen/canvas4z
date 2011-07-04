@@ -5,6 +5,8 @@
 	<script src="Text.js" />
 	<script src="Snapshot.js" />
 	<script src="Composite.js" />
+	<script src="Effect.js" />
+	<script src="Colors.js" />
 	<script>//ExplorerCanvas, Copyright 2006 Google Inc.</script>
 	<script src="excanvas.js" browser="ie"/>
 </package>
