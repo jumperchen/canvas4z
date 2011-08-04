@@ -22,6 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.zkoss.canvas.*;
+import org.zkoss.canvas.drawable.Drawable;
+import org.zkoss.canvas.drawable.Path;
+import org.zkoss.canvas.drawable.Rectangle;
+import org.zkoss.canvas.drawable.Shape;
+import org.zkoss.canvas.drawable.Text;
 import org.zkoss.json.JSONValue;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
@@ -31,8 +36,8 @@ import org.zkoss.zkex.zul.Colorbox;
 import org.zkoss.zul.*;
 
 /**
+ * 
  * @author simon
- *
  */
 public class CanvasBoardController extends GenericForwardComposer {
 	private static final long serialVersionUID = 1L;
@@ -82,7 +87,7 @@ public class CanvasBoardController extends GenericForwardComposer {
 		}
 		
 		setDrawingState(s);
-		s.setLineWidth(2); // default for shapes to look better
+		s.getDrawingStyle().setLineWidth(2); // default for shapes to look better
 		cvs1.add(s);
 		Object[] objs = new Object[2];
 		objs[0] = _shapeNames.get(shapeIndex);
@@ -95,7 +100,8 @@ public class CanvasBoardController extends GenericForwardComposer {
 		alpha = data[2];
 		
 		Text txt = new Text(textBox.getValue(), 0, 0);
-		txt.setFont(fontSizeBox.getValue() + "px " + fontBox.getSelectedItem().getValue());
+		txt.getDrawingStyle().setFont(
+				fontSizeBox.getValue() + "px " + fontBox.getSelectedItem().getValue());
 		txt.setPosition(data[0], data[1]);
 		
 		setDrawingState(txt);
@@ -154,9 +160,8 @@ public class CanvasBoardController extends GenericForwardComposer {
 		constructShapes();
 		
 		// generate shape options
-		for(int i=0; i<_shapeNames.size(); i++){
+		for(int i = 0; i < _shapeNames.size(); i++)
 			shapeBox.appendItem(_shapeNames.get(i), ""+i);
-		}
 		shapeBox.setSelectedIndex(0);
 		
 		// send all shapes to client side
@@ -165,7 +170,7 @@ public class CanvasBoardController extends GenericForwardComposer {
 		shapeListModel = new ListModelList();
 		shapeListBox = (Listbox) shapeListWindow.getFellow("shapeListBox");
 		shapeListBox.setModel(shapeListModel);
-		shapeListBox.setItemRenderer(new ListitemRenderer(){
+		shapeListBox.setItemRenderer(new ListitemRenderer() {
 			public void render(Listitem item, Object data) throws Exception {
 				Object[] objs = (Object[]) data;
 				Listcell lc = new Listcell();
@@ -184,17 +189,17 @@ public class CanvasBoardController extends GenericForwardComposer {
 		
 		switch(doStroke + doFill){
 			case 0:
-				drawingType = Drawable.DrawingType.NONE;
+				drawingType = DrawingStyle.DrawingType.NONE;
 				break;
 			case 1:
-				drawingType = Drawable.DrawingType.STROKE;
+				drawingType = DrawingStyle.DrawingType.STROKE;
 				break;
 			case 2:
-				drawingType = Drawable.DrawingType.FILL;
+				drawingType = DrawingStyle.DrawingType.FILL;
 				break;
 			case 3:
 			default:
-				drawingType = Drawable.DrawingType.BOTH;
+				drawingType = DrawingStyle.DrawingType.BOTH;
 				break;
 		}
 		
@@ -204,11 +209,11 @@ public class CanvasBoardController extends GenericForwardComposer {
 		//double alpha = alphaSlider.getCurpos() / 100.0;
 		//bug #3006313: getCurpos() does not work
 		
-		drawable.setDrawingType(drawingType);
-		drawable.setStrokeStyle(storkeColor);
-		drawable.setFillStyle(fillColor);
-		drawable.setAlpha(alpha);
-		
+		DrawingStyle ds = drawable.getDrawingStyle();
+		ds.setDrawingType(drawingType);
+		ds.setStrokeStyle(storkeColor);
+		ds.setFillStyle(fillColor);
+		ds.setAlpha(alpha);
 	}
 	
 	private double[] getDataValues(Event event){
