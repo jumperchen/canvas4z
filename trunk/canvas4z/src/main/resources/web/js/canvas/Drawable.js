@@ -22,7 +22,7 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	obj: null,
 	state: null,
 	
-	// TODO: extract drawing style info
+	// TODO: extract drawing style info, reduce API
 	
 	$init: function () {
 		this.state = new Object();
@@ -274,6 +274,9 @@ canvas.Drawable = zk.$extends(zk.Object, {
 		this.state.txmw = v;
 		return this;
 	},
+	
+	
+	
 	/**
 	 * Returns true if the point is contains in this Drawable
 	 */
@@ -293,9 +296,17 @@ canvas.Drawable = zk.$extends(zk.Object, {
 		cvs._unapplyLocalState();
 	},
 	/**
+	 * Paints the drawable item, including drawing state handling.
+	 */
+	paint_: function (cvs, efts) {
+		this.applyState_(cvs);
+		this.paintObj_(cvs);
+		this.unapplyState_(cvs);
+	},
+	/**
 	 * Paints the drawable item. Shall be implemented by subclass.
 	 */
-	paint_: function (cvs) {},
+	paintObj_: function (cvs) {},
 	/**
 	 * Imports the data from JSON
 	 */
@@ -319,45 +330,19 @@ canvas.Drawable = zk.$extends(zk.Object, {
 		this.state = zk.copy({}, state);
 		return this;
 	},
-	// copy state data from drw
-	/*
-	_copyState: function (drw) {
-		// TODO: remove
-		this.state.dwtp = drw.state.dwtp;
-		this.state.strk = drw.state.strk;
-		this.state.fil  = drw.state.fil;
-		this.state.alfa = drw.state.alfa;
-		this.state.lnw  = drw.state.lnw;
-		this.state.lncp = drw.state.lncp;
-		this.state.lnj  = drw.state.lnj;
-		this.state.mtr  = drw.state.mtr;
-		this.state.shx  = drw.state.shx;
-		this.state.shy  = drw.state.shy;
-		this.state.shb  = drw.state.shb;
-		this.state.shc  = drw.state.shc;
-		this.state.cmp  = drw.state.cmp;
-		this.state.fnt  = drw.state.fnt;
-		this.state.txal = drw.state.txal;
-		this.state.txbl = drw.state.txbl;
-		this.state.txmw = drw.state.txmw;
-		
-		if(drw.state.trns != null) {
-			this.state.trns = [];
-			for(i=6;i--;)
-				this.state.trns[i] = drw.state.trns[i];
-		} else
-			this.state.trns = null;
-		
-		if(drw.state.clp != null) {
-			this.state.clp = new canvas.Path();
-			this.state.clp._copyObj(drw.state.clp);
-		} else
-			this.state.clp = null;
+	/**
+	 * Returns the (nearly) minimal Rectangle which contains the drawable.
+	 */
+	getBoundingRect_: function (cvs) {
+		var cn = this.$n('cnt');
+		return {x: 0, y: 0, w: cn.width, h: cn.height}; // unknown item, return all view port
 	}
-	*/
 	
 },{
 	
+	/**
+	 * 
+	 */
 	create: function (drw) {
 		if (typeof(drw) == 'string')
 			drw = jq.evalJSON(drw);
@@ -368,12 +353,21 @@ canvas.Drawable = zk.$extends(zk.Object, {
 			d = new canvas.Drawable();
 		return d.import_(drw);
 	},
+	/**
+	 * 
+	 */
 	createAll: function (drws) {
 		if (typeof(drws) == 'string')
 			drws = jq.evalJSON(drws);
 		for (var arr = [], i = 0, len = drws.length; i < len; i++)
 			arr.push(canvas.Drawable.create(drws[i]));
 		return arr;
+	},
+	/**
+	 * Joins bnd1 range into bnd0.
+	 */
+	_joinBound: function (bnd0, bnd1) {
+		// TODO
 	}
 	
 });

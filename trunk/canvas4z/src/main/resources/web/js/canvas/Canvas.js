@@ -111,15 +111,18 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	_clearCanvas: function () {
 		this._ctx.clearRect(0, 0, this._cvs.width, this._cvs.height);
 	},
-	_repaint: function () {
+	_repaint: function (efts) {
 		this._clearCanvas();
+		var sldi = efts ? efts.sldi : null,
+			hvi = efts ? efts.hvi : null;
 		for (var i = 0, drws = this._drwbls, len = drws.length; i < len; i++)
-			this._paint(drws[i]);
+			this._paint(drws[i], {hv: (hvi == i), sld: (sldi == i)});
 	},
-	_paint: function (drw) {
+	_paint: function (drw, efts) {
 		// TODO: preload image issue
+		// TODO: refactor for effect
 		drw.applyState_(this);
-		drw.paint_(this);
+		drw.paintObj_(this, efts);
 		drw.unapplyState_(this);
 	},
 	// state management helper //
@@ -231,10 +234,13 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 			var	d = i < 0 ? null : this._drwbls[i],
 				pd = pi < 0 ? null : this._drwbls[pi];
 			
+			// TODO: repaint with param
+			/*
 			if (pd && pd.eft)
-				pd.eft.hover(this); // remove hover effect from the previous
+				pd.eft.hover(this, pd, pi); // remove hover effect from the previous
 			if (d && d.eft)
-				d.eft.hover(this, true);
+				d.eft.hover(this, d, i, true);
+			*/
 			
 			this.fire('onTooltip', zk.copy(evt.data, {i:i,pi:pi}));
 			this._hvi = i;
@@ -249,10 +255,13 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 			var	d = i < 0 ? null : this._drwbls[i],
 				pd = pi < 0 ? null : this._drwbls[pi];
 			
+			// TODO: repaint with param
+			/*
 			if (pd && pd.eft)
-				pd.eft.select(this); // remove hover effect from the previous
+				pd.eft.select(this, pd, pi); // remove hover effect from the previous
 			if (d && d.eft)
-				d.eft.select(this, true);
+				d.eft.select(this, d, i, true);
+			*/
 			
 			this.fire('onSelect', zk.copy(evt.data, {i:i,pi:pi}));
 			this._sldi = i;

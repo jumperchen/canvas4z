@@ -27,9 +27,9 @@
 		cvs.add(star);
 		*/
 		
-		org.zkoss.canvas.Path heart = Shapes.heart(10)
-			.transform(new java.awt.geom.AffineTransform(20, 0, 0, 20, 200, 200))
-			.setDrawingType("stroke");
+		org.zkoss.canvas.drawable.Path heart = Shapes.heart(10)
+			.transform(new java.awt.geom.AffineTransform(20, 0, 0, 20, 200, 200));
+			//.setDrawingType("stroke");
 		cvs.add(heart);
 		
 	]]></zscript>

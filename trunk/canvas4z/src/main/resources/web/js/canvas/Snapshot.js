@@ -21,7 +21,7 @@ canvas.Snapshot = zk.$extends(canvas.Drawable, {
 		// TODO: just range check
 		return false;
 	},
-	paint_: function (cvs) {
+	paintObj_: function (cvs) {
 		var obj = this.obj,
 			img = jq('#' + obj.cnt)[0];
 		if(obj.sx)
