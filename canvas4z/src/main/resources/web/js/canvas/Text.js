@@ -16,6 +16,8 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
  */
 canvas.Text = zk.$extends(canvas.Drawable, {
 	
+	// TODO: how to estimate width/height
+	
 	$init: function (txt, x, y) {
 		this.$super('$init');
 		this.objtp = "text";
@@ -39,7 +41,7 @@ canvas.Text = zk.$extends(canvas.Drawable, {
 		this.obj.t = txt;
 		return this;
 	},
-	paint_: function (cvs) {
+	paintObj_: function (cvs) {
 		switch(cvs._drwTp){
 		case "none":
 			break;

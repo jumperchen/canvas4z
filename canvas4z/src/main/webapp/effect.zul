@@ -4,12 +4,12 @@
 		import org.zkoss.canvas.*;
 		import org.zkoss.canvas.util.Shapes;
 		
-		org.zkoss.canvas.Path star = Shapes.nStar(10, 7, 30)
+		org.zkoss.canvas.drawable.Path star = Shapes.nStar(10, 7, 30)
 			.transform(new java.awt.geom.AffineTransform(15, 0, 0, 15, 100, 100))
 			.setDrawingType("both").setFillStyle("#888888").setSelectable(true);
 		cvs.add(star);
 		
-		org.zkoss.canvas.Path heart = Shapes.heart(10)
+		org.zkoss.canvas.drawable.Path heart = Shapes.heart(10)
 			.transform(new java.awt.geom.AffineTransform(20, 0, 0, 20, 200, 200))
 			.setDrawingType("both").setFillStyle("#888888").setSelectable(true);
 		cvs.add(heart);

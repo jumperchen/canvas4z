@@ -11,6 +11,21 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 */
 (function () {
 	
+	function _updateBound(bnd, x, y) {
+		var x0 = bnd.x0,
+			x1 = bnd.x1,
+			y0 = bnd.y0,
+			y1 = bnd.y1;
+		if (x0 == undefined || x < x0)
+			bnd.x0 = x;
+		if (x1 == undefined || x > x1)
+			bnd.x1 = x;
+		if (y0 == undefined || y < y0)
+			bnd.y0 = y;
+		if (y1 == undefined || y > y1)
+			bnd.y1 = y;
+	}
+	
 	function _getPathCrossing(path, x, y) {
 		var sg = path.obj.sg,
 			sum = 0,
@@ -184,7 +199,10 @@ canvas.Rectangle = zk.$extends(canvas.Shape, {
 			&& sy < y 
 			&& y < sy + this.obj.h;
 	},
-	paint_: function (cvs) {
+	getBoundingRect_: function () {
+		return zk.copy(this.obj);
+	},
+	paintObj_: function (cvs) {
 		var r = this.obj;
 		switch(cvs._drwTp){
 		case "none":
@@ -316,7 +334,30 @@ canvas.Path = zk.$extends(canvas.Shape, {
 			return false;
 		return _getPathCrossing(this, x, y) % 2 != 0;
 	},
-	paint_: function (cvs) {
+	getBoundingRect_: function () {
+		var sgs = this.obj.sg, 
+			bnd = {};
+		for (var i = 0, len = sgs.length; i < len; i++) {
+			var sg = sgs[i],
+				data = sg.dt;
+			switch(sg.tp){
+			case "bz":
+				_updateBound(bnd, data[4], data[5]);
+				// no break
+			case "qd":
+				_updateBound(bnd, data[2], data[3]);
+				// no break
+			case "mv":
+			case "ln":
+				_updateBound(bnd, data[0], data[1]);
+				break;
+			case "cl":
+				// do nothing
+			}
+		}
+		return bnd; // TODO: check empty
+	},
+	paintObj_: function (cvs) {
 		// mimic path drawing based on data
 		this._drawPath(cvs);
 		
@@ -341,21 +382,6 @@ canvas.Path = zk.$extends(canvas.Shape, {
 	_drawPath: function (cvs) {
 		canvas.Path.doPath(cvs, this.obj);
 	}
-	/*
-	// copy object data from path
-	_copyObj: function (path) {
-		// TODO: remove
-		this.obj.sg = [];
-		var sg1 = path.obj.sg;
-		for(var i = sg1.length; i--;){
-			this.obj.sg[i] = new Object();
-			this.obj.sg[i].tp = sg1[i].tp;
-			this.obj.sg[i].dt = [];
-			for(var j = sg1[i].dt.length; j-- ;)
-				this.obj.sg[i].dt[j] = sg1[i].dt[j];
-		}
-	}
-	*/
 	
 },{
 	

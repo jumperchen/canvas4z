@@ -17,25 +17,25 @@ canvas.Effect = zk.$extends(zk.Object, {
 	/**
 	 * 
 	 */
-	hover: function (cvs, hover) {},
+	hover: function (cvs, drw, index, hover) {},
 	
 	/**
 	 * 
 	 */
-	select: function (cvs, select) {}
+	select: function (cvs, drw, index, select) {}
 	
 });
-		
+
 canvas.SimpleEffect = zk.$extends(canvas.Effect, {
 	
-	hover: function (cvs, hover) {
+	hover: function (cvs, drw, index) {
 		// TODO
 	},
 	
-	select: function (cvs, select) {
+	select: function (cvs, drw, index) {
 		// TODO
 	}
 	
 });
-	
+
 })();
