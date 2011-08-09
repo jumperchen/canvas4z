@@ -67,12 +67,13 @@
 		shape.state.lnw = 2;
 		
 		// prepare shape
-		if(shape.objtp == "rect"){
+		if(shape.objtp == "canvas.Rectangle"){
 			shape.obj.x = start.x;
 			shape.obj.y = start.y;
 		} else {
-			path2._copyObj(shape);
-			path2._copyState(shape);
+			path2.import_(shape);
+			//path2._copyObj(shape);
+			//path2._copyState(shape);
 		}
 		
 	} else if (mode == "to-select") {
@@ -85,7 +86,6 @@
 	}
 ]]></attribute>
 <attribute w:name="onMouseMove"><![CDATA[
-	
 	if (mode == "to-text") {
 		var pos = getMousePos(event, cvsPos);
 		
@@ -101,12 +101,11 @@
 	} else if (mode == "drawing") {
 		var pos = getMousePos(event, cvsPos);
 		var size = {x: pos.x - start.x, y: pos.y - start.y};
-		
-		if(sigDiff(pos, last)) {
+		if (sigDiff(pos, last)) {
 			last.x = pos.x;
 			last.y = pos.y;
 			
-			if(shape.objtp == "rect"){
+			if (shape.objtp == "canvas.Rectangle") {
 				shape.obj.w = size.x;
 				shape.obj.h = size.y;
 				
@@ -123,7 +122,7 @@
 	} else if (mode == "selecting") {
 		var pos = getMousePos(event, cvsPos);
 		
-		if(sigDiff(pos, last)) {
+		if (sigDiff(pos, last)) {
 			last.x = pos.x;
 			last.y = pos.y;
 			
