@@ -327,7 +327,7 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	 * Imports the drawable state
 	 */
 	importState_: function (state) {
-		this.state = zk.copy({}, state);
+		this.state = zk.copy({}, state); // TODO: check deep values
 		return this;
 	},
 	/**

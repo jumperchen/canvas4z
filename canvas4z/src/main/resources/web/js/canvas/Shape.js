@@ -146,7 +146,6 @@ canvas.Rectangle = zk.$extends(canvas.Shape, {
 	
 	$init: function (x, y, w, h) {
 		this.$super('$init');
-		this.objtp = "rect";
 		this.obj = new zk.Object();
 		this.obj.x = x;
 		this.obj.y = y;
@@ -229,7 +228,6 @@ canvas.Path = zk.$extends(canvas.Shape, {
 	
 	$init: function () {
 		this.$super('$init');
-		this.objtp = "path";
 		this.obj = new zk.Object();
 		this.obj.sg = [];
 	},
@@ -322,17 +320,23 @@ canvas.Path = zk.$extends(canvas.Shape, {
 	 */
 	clone: function () {
 		return new canvas.Path().import_(this);
-		/*
-		var p2 = new canvas.Path();
-		p2._copyObj(this);
-		p2._copyState(this);
-		*/
 	},
 	//@Override
 	contains: function (x, y) {
 		if(isNaN(x) || isNaN(y)) 
 			return false;
 		return _getPathCrossing(this, x, y) % 2 != 0;
+	},
+	importObj_: function (obj) {
+		var sg = this.obj.sg = [],
+			sg2 = obj.sg;
+		if (sg2)
+			for (var i = sg2.length, sg2i; i--; ) {
+				var sg2i = sg2[i];
+				sg[i] = { tp: sg2i.tp };
+				for (var sgdt = sg[i].dt = [], sg2dt = sg2i.dt, j = sg2dt.length; j--; )
+					sgdt[j] = sg2dt[j];
+			}
 	},
 	getBoundingRect_: function () {
 		var sgs = this.obj.sg, 

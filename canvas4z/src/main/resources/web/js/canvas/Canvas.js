@@ -199,7 +199,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 			cvs.width = zk.parseInt(w);
 		if (h) 
 			cvs.height = zk.parseInt(h);
-		if (zk.ie) 
+		if (zk.ie < 9) 
 			G_vmlCanvasManager.initElement(cvs);
 	},
 	onSize: _zkf = function () {
