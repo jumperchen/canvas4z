@@ -6,7 +6,7 @@
 		
 		// predefined shapes
 		frame = new canvas.Rectangle(0,0,0,0).setDrawingType("stroke");
-		drws = jq.evalJSON(this.$f('shapeDataLb').getValue());
+		drws = canvas.Drawable.createAll(this.$f('shapeDataLb').getValue());
 		
 		// cache
 		cvs2 = this.$f('cvs2');
@@ -67,13 +67,11 @@
 		shape.state.lnw = 2;
 		
 		// prepare shape
-		if(shape.objtp == "canvas.Rectangle"){
+		if(shape.$instanceof(canvas.Rectangle)){
 			shape.obj.x = start.x;
 			shape.obj.y = start.y;
 		} else {
 			path2.import_(shape);
-			//path2._copyObj(shape);
-			//path2._copyState(shape);
 		}
 		
 	} else if (mode == "to-select") {
@@ -105,7 +103,7 @@
 			last.x = pos.x;
 			last.y = pos.y;
 			
-			if (shape.objtp == "canvas.Rectangle") {
+			if (shape.$instanceof(canvas.Rectangle)) {
 				shape.obj.w = size.x;
 				shape.obj.h = size.y;
 				
