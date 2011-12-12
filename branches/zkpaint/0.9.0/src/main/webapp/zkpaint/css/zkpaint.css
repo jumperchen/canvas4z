@@ -17,3 +17,8 @@ tr.zkpaint-tool-grid-category td.z-cell span.z-label {
 	font-size:11px;
 	color:#708098;
 }
+
+tr.zkpaint-tool-grid-category 
+td.z-cell span.paint-tool-panel-text-highlight {
+	color:#2070DD; font-weight:bold;
+}

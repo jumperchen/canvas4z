@@ -1,0 +1,127 @@
+<?taglib uri="http://www.zkoss.org/dsp/web/core" prefix="c" ?>
+<?component name="separator" extends="separator" height="77px" orient="vertical" bar="true"?>
+<zk xmlns:w="client">
+	<script type="text/javascript" src="zkpaint/scripts/toolbarGrid.js" />
+	<grid zclass="zkpaint-tool-grid" w:use="canvas.ToolbarGrid">
+		<columns>
+			<column align="center" hflex="min"/>
+			<column align="center" hflex="min"/>
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="right" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+			<column align="center" hflex="min" />
+		</columns>
+		<rows>
+			<row>
+				<!-- Select -->
+				<button image="zkpaint/img/open-file.png" width="40px" upload="true" forward="onUpload=onLoad"/>
+				<cell rowspan="2">
+					<!-- select single -->
+					<button id="selectBtn" orient="vertical"
+						label="Select" image="zkpaint/img/select-btn.png" />
+				</cell>
+				
+				<cell rowspan="3">
+					<separator/>
+				</cell>
+				
+				<cell rowspan="2">
+					<!-- select single -->
+					<button id="textBtn" orient="vertical" label="Text"
+						image="zkpaint/img/text-btn.png" width="55px"/>
+				</cell>
+				
+				<hlayout>
+					<listbox id="fontBox" mold="select" disabled="${c:isExplorer()}">
+						<listitem label="Serif" value="serif" selected="true"/>
+						<listitem label="Sans Serif" value="sans-serif" />
+						<listitem label="Monospace" value="monospace" />
+					</listbox>
+					<intbox id="fontSizeBox" value="30" maxlength="3" disabled="${c:isExplorer()}"
+						width="30px" />
+					px
+				</hlayout>
+
+				<cell rowspan="3">
+					<separator/>
+				</cell>
+				
+				<cell rowspan="2">
+					<hlayout>
+						<button id="arrowBtn" orient="vertical" label="Arrow"
+							image="zkpaint/img/arrow-btn.png" width="55px"/>
+						<button id="shapeBtn" orient="vertical"
+							label="Shape" image="zkpaint/img/shape-btn.png" />
+						<listbox id="shapeBox" mold="select" />
+					</hlayout>
+				</cell>
+
+				<cell rowspan="3">
+					<separator/>
+				</cell>
+				
+				<label value="Outline:" />
+				
+				<listbox id="strokeTypeBox" mold="select">
+					<listitem label="No Outline" value="0" />
+					<listitem label="Solid Color" value="1" selected="true" />
+				</listbox>
+
+				<cell rowspan="3">
+					<separator/>
+				</cell>
+
+				<colorbox id="strokeColorBox"/>
+				<colorbox id="fillColorBox" color="#0066FF"/>
+				<slider id="alphaSlider" curpos="100" maxpos="100"
+					width="100px" />
+
+				<cell rowspan="3">
+					<separator/>
+				</cell>
+			</row>
+
+			<row>
+				<button image="zkpaint/img/save-file.png" forward="onSave"/>
+				<textbox id="textBox" value="ZK not just UI" disabled="${c:isExplorer()}"
+					style="font-family: serif;" height="20px" hflex="1" />
+				<label value="Fill:" />
+				<listbox id="fillTypeBox" mold="select">
+					<listitem label="No Fill" value="0" />
+					<listitem label="Solid Color" value="1" selected="true" />
+				</listbox>
+				<label value="Outline" />
+				<label value="Fill" />
+				<label value="Transparency" />
+			</row>
+
+			<row zclass="zkpaint-tool-grid-category">
+				<cell/>
+				<cell>
+					<label id="catLbSelect" value="Select" sclass="paint-tool-panel-text-highlight"/>
+				</cell>
+				<cell colspan="2">
+					<label id="catLbText" value="Text" />
+				</cell>
+				<cell>
+					<label id="catLbShape" value="Shapes" />
+				</cell>
+				<cell colspan="2">
+					<label value="Styles" />
+				</cell>
+				<cell colspan="3">
+					<label value="Colors" />
+				</cell>
+			</row>
+		</rows>
+	</grid>
+</zk>
