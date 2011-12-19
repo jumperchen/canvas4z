@@ -1,0 +1,11 @@
+<?page title="Basic Test 02" contentType="text/html;charset=UTF-8"?>
+<zk>
+	<window title="Basic Test 02" border="normal">
+		<zscript><![CDATA[
+			import org.zkoss.canvas.*;
+			Rectangle r = new Rectangle();
+			r.setDrawingType(Drawable.DrawingType.STROKE);
+			alert(r.getDrawingType());
+		]]></zscript>
+	</window>
+</zk>

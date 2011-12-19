@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- lang-addon.xml
+	Purpose:
+		A definition of the xul/html language for ZK
+	Description:
+		
+	Note:
+		This file has to be registered in zk.xml to be in effect 
+	History:
+		May 12, 2010 16:23:43, Created by simon
+
+Copyright (C) 2010 Potix Corporation. All Rights Reserved.
+-->
+
+<language-addon>
+	<addon-name>canvas</addon-name>
+	<depends>zul</depends>
+	<language-name>xul/html</language-name>
+	
+	<version>
+		<version-class>org.zkoss.canvas.Version</version-class>
+		<version-uid>0.9.0</version-uid>
+	</version>
+	
+	<component>
+		<component-name>canvas</component-name>
+		<component-class>org.zkoss.canvas.Canvas</component-class>
+		<widget-class>canvas.Canvas</widget-class>
+		<mold>
+			<mold-name>default</mold-name>
+			<mold-uri>mold/canvas.js</mold-uri>
+			<css-uri>css/canvas.css.dsp</css-uri>
+		</mold>
+	</component>
+</language-addon>
