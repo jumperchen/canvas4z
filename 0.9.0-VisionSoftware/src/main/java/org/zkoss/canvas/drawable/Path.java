@@ -31,6 +31,9 @@ import org.zkoss.json.*;
  */
 public class Path extends Shape {
 	
+	public static final String TYPE = "canvas.Path";
+	
+	
 	/**
 	 * Creates an empty Path.
 	 */
@@ -60,7 +63,7 @@ public class Path extends Shape {
 	@Override
 	public String getType() {
 		// This value must match the setting in Canvas.js #_paint
-		return "canvas.Path";
+		return TYPE;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -88,15 +91,15 @@ public class Path extends Shape {
 	
 	
 	
-	private class PathSegment implements JSONAware {
-		private static final String MOVE_TO = "mv";
-		private static final String LINE_TO = "ln";
-		private static final String QUAD_TO = "qd";
-		private static final String BEZIER_TO = "bz";
-		private static final String CLOSE = "cl";
+	protected class PathSegment implements JSONAware {
+		protected static final String MOVE_TO = "mv";
+		protected static final String LINE_TO = "ln";
+		protected static final String QUAD_TO = "qd";
+		protected static final String BEZIER_TO = "bz";
+		protected static final String CLOSE = "cl";
 		
-		private static final String TYPE_KEY = "tp";
-		private static final String DATA_KEY = "dt";
+		protected static final String TYPE_KEY = "tp";
+		protected static final String DATA_KEY = "dt";
 		
 		private String _type;
 		private float[] _coords;

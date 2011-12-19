@@ -28,6 +28,9 @@ public class Text extends Drawable {
 	private double _x;
 	private double _y;
 	
+	public static final String TYPE = "canvas.Text";
+	
+	
 	/**
 	 * 
 	 * @param text: string to paint
@@ -101,7 +104,7 @@ public class Text extends Drawable {
 	
 	@Override
 	public String getType() {
-		return "canvas.Text";
+		return TYPE;
 	}
 	
 	@Override
