@@ -29,6 +29,8 @@ import org.zkoss.json.JSONObject;
  */
 public class Rectangle extends Shape {
 	
+	public static final String TYPE = "canvas.Rectangle";
+	
 	/**
 	 * Constructs a Rectangle at (0,0) with 0 width and height
 	 */
@@ -70,7 +72,7 @@ public class Rectangle extends Shape {
 	@Override
 	public String getType() {
 		// This value must match the setting in Canvas.js #_paint
-		return "canvas.Rectangle";
+		return TYPE;
 	}
 	
 	@SuppressWarnings("unchecked")
