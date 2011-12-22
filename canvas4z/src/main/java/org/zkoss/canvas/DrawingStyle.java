@@ -20,6 +20,7 @@ import java.awt.geom.Path2D;
 import java.util.Iterator;
 
 import org.zkoss.canvas.drawable.Path;
+import org.zkoss.canvas.drawable.Shape;
 import org.zkoss.json.JSONAware;
 import org.zkoss.json.JSONObject;
 
@@ -158,10 +159,19 @@ public class DrawingStyle implements JSONAware {
 	}
 	
 	/**
+	 * Sets the clipping region.
+	 */
+	public DrawingStyle setClipping(Shape shape) {
+		_clipping = shape;
+		set(AttrDef.CLIPPING, shape);
+		return this;
+	}
+	
+	/**
 	 * Sets the clipping region. 
 	 * @param clipping: Can be any java.awt.Shape
 	 */
-	public DrawingStyle setClipping(java.awt.Shape shape){
+	public DrawingStyle setClipping(java.awt.Shape shape) {
 		// Java 2D uses Bezier curve to simulate arc when passing into Path2D
 		// so passing an Arc here will turn it into a path formed by Bezier curves
 		_clipping = shape;
