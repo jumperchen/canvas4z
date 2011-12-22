@@ -29,16 +29,9 @@ import org.zkoss.json.JSONObject;
  */
 public abstract class Drawable implements JSONAware, Cloneable {
 	
-	protected DrawingStyle _style;
+	protected DrawingStyle _style = new DrawingStyle();
 	
 	// TODO: draggable
-	
-	/**
-	 * 
-	 */
-	public Drawable() {
-		_style = new DrawingStyle();
-	}
 	
 	/**
 	 * Returns the type of Drawable to specify the corresponding Drawable js 
