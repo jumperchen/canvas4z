@@ -338,7 +338,6 @@ canvas.Path = zk.$extends(canvas.Shape, {
 			}
 	},
 	getBound_: function () {
-		// TODO: if clipped, return intersecting bound of this and clip
 		var sgs = this.obj.sg,
 			_addToBound = canvas.Drawable._addToBound,
 			bnd = {};

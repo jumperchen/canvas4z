@@ -298,9 +298,9 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	/**
 	 * Paints the drawable item, including drawing state handling.
 	 */
-	paint_: function (cvs, bnd) {
+	paint_: function (cvs) {
 		this.applyState_(cvs);
-		this.paintObj_(cvs, bnd);
+		this.paintObj_(cvs);
 		this.unapplyState_(cvs);
 	},
 	/**
@@ -327,21 +327,23 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	 * Imports the drawable state
 	 */
 	importState_: function (state) {
-		this.state = zk.copy({}, state); // TODO: check deep values
+		var st = this.state = zk.copy({}, state); // TODO: check deep values
+		if (st.clp)
+			st.clp = canvas.Drawable.create(st.clp);
 		return this;
 	},
 	/**
 	 * Returns the (nearly) minimal Rectangle which contains the drawable.
 	 * A null return value means the entire canvas viewbox.
 	 */
-	getBound_: function (cvs) {
+	getBound_: function (cvs) { // TODO: shall concern style, like transform, shadow, etc
 		return null; // unknown object, return all to be save
 	}
 	
 },{
 	
 	/**
-	 * 
+	 * Create drawable object from either JSON object or JSON String.
 	 */
 	create: function (drw) {
 		if (typeof(drw) == 'string')
@@ -354,7 +356,7 @@ canvas.Drawable = zk.$extends(zk.Object, {
 		return d.import_(drw);
 	},
 	/**
-	 * 
+	 * Create drawable objects from JSON String.
 	 */
 	createAll: function (drws) {
 		if (typeof(drws) == 'string')

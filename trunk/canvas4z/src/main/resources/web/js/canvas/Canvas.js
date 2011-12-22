@@ -12,6 +12,27 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 */
 (function () {
 	
+	var _clipBnd; // cache of clip bound
+	
+	function _getClipBound(wgt) {
+		if (_clipBnd || _clipBnd === null)
+			return _clipBnd;
+		
+		var drws = this._drwbls,
+			_addToBound = canvas.Drawable._addToBound,
+			_clipBnd = {}, clip;
+		for (var i = 0, len = drws.length; i < len; i++) {
+			clip = drws[i].state.clp;
+			if (clip) {
+				var cbnd = clip.getBound_();
+				if (!cbnd)
+					return (_clipBnd = null); // all
+				_addToBound(_clipBnd, cbnd.x0, cbnd.y0);
+				_addToBound(_clipBnd, cbnd.x1, cbnd.y1);
+			}
+		}
+		return _clipBnd;
+	}
 	function _getRectFromBound(wgt, bnd) {
 		var cvs = wgt._cvs;
 		if (!bnd)
@@ -58,7 +79,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	
 	// TODO: rerender upon resize
 	
-	setDrwngs: function (drwsJSON) {
+	setDrwngs: function (drwsJSON) { // call by server
 		this._drwbls = canvas.Drawable.createAll(drwsJSON);
 		if (this.desktop)
 			this._repaint();
@@ -181,32 +202,32 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	_setDOMContextState: function (st) {
 		var ctx = this._ctx;
 		// drawing type is NOT a part of DOM Canvas state
-		if(st.dwtp) 
+		if (st.dwtp) 
 			this._drwTp = st.dwtp;
-		if(st.trns) { // transformation
+		if (st.trns) { // transformation
 			var trns = st.trns;
 			ctx.setTransform(trns[0], trns[1], trns[2], trns[3], trns[4], trns[5]);
 		}
-		if(st.clp) { // clipping
-			canvas.Path.doPath(this, st.clp.obj);
+		if (st.clp) { // clipping
+			canvas.Path.doPath(this, st.clp.obj); // TODO: also concern rectangle
 			ctx.clip();
 			ctx.beginPath();
 		}
-		if(st.strk) ctx.strokeStyle   = st.strk;
-		if(st.fil)  ctx.fillStyle     = st.fil;
-		if(st.alfa) ctx.globalAlpha   = st.alfa;
-		if(st.lnw)  ctx.lineWidth     = st.lnw;
-		if(st.lncp) ctx.lineCap       = st.lncp;
-		if(st.lnj)  ctx.lineJoin      = st.lnj;
-		if(st.mtr)  ctx.miterLimit    = st.mtr;
-		if(st.shx)  ctx.shadowOffsetX = st.shx;
-		if(st.shy)  ctx.shadowOffsetY = st.shy;
-		if(st.shb)  ctx.shadowBlur    = st.shb;
-		if(st.shc)  ctx.shadowColor   = st.shc;
-		if(st.cmp)  ctx.globalCompositeOperation = st.cmp;
-		if(st.fnt)  ctx.font          = st.fnt;
-		if(st.txal) ctx.textAlign     = st.txal;
-		if(st.txbl) ctx.textBaseline  = st.txbl;
+		if (st.strk) ctx.strokeStyle   = st.strk;
+		if (st.fil)  ctx.fillStyle     = st.fil;
+		if (st.alfa) ctx.globalAlpha   = st.alfa;
+		if (st.lnw)  ctx.lineWidth     = st.lnw;
+		if (st.lncp) ctx.lineCap       = st.lncp;
+		if (st.lnj)  ctx.lineJoin      = st.lnj;
+		if (st.mtr)  ctx.miterLimit    = st.mtr;
+		if (st.shx)  ctx.shadowOffsetX = st.shx;
+		if (st.shy)  ctx.shadowOffsetY = st.shy;
+		if (st.shb)  ctx.shadowBlur    = st.shb;
+		if (st.shc)  ctx.shadowColor   = st.shc;
+		if (st.cmp)  ctx.globalCompositeOperation = st.cmp;
+		if (st.fnt)  ctx.font          = st.fnt;
+		if (st.txal) ctx.textAlign     = st.txal;
+		if (st.txbl) ctx.textBaseline  = st.txbl;
 		// maxWidth is not a part of DOM Canvas state
 		if(st.txmw) this._txtMxW = st.txmw;
 	},
