@@ -66,8 +66,8 @@ public class EventTestController extends GenericForwardComposer {
 				s.setFillStyle("#888888");
 			}
 		};
-		cvs.add(Shapes.heart(200).setSelectable(true).setStyle(ss));
-		cvs.add(Shapes.nGon(50, 6).setSelectable(true).setStyle(ss));
+		cvs.add(Shapes.heart(200).setStyle(ss));
+		cvs.add(Shapes.nGon(50, 6).setStyle(ss));
 	}
 	
 }

@@ -33,7 +33,7 @@
 		</button>
 	</div>
 	<zscript><![CDATA[
-		cvs.add(new org.zkoss.canvas.Rectangle(0,0,2000,2000)
+		cvs.add(new org.zkoss.canvas.drawable.Rectangle(0,0,2000,2000)
 			.setDrawingType("both")
 			.setFillStyle("#888888"));
 	]]></zscript>

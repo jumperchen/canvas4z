@@ -18,8 +18,8 @@ canvas.Snapshot = zk.$extends(canvas.Drawable, {
 	
 	//@Override
 	contains: function (x, y) {
-		// TODO: just range check
-		return false;
+		var bnd = this.getBound_();
+		return x >= bnd.x0 && x <= bnd.x1 && y >= bnd.y0 && y <= bnd.y1;
 	},
 	paintObj_: function (cvs) {
 		var obj = this.obj,
@@ -31,6 +31,15 @@ canvas.Snapshot = zk.$extends(canvas.Drawable, {
 			cvs._ctx.drawImage(img, obj.dx, obj.dy, obj.dw, obj.dh);
 		else
 			cvs._ctx.drawImage(img, obj.dx, obj.dy);
+	},
+	getBound_: function (cvs) {
+		var obj = this.obj,
+			img = jq('#' + obj.cnt)[0],
+			x0 = obj.dx,
+			y0 = obj.dy,
+			w = obj.dw || img.offsetWidth,
+			h = obj.dh || img.offsetHeight;
+		return {x0: x0, y0: y0, x1: x0 + w, y1: y0 + h};
 	}
 	
 });

@@ -12,6 +12,26 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 */
 (function () {
 	
+	function _getRectFromBound(wgt, bnd) {
+		var cvs = wgt._cvs;
+		if (!bnd)
+			return [0, 0, cvs.width, cvs.height];
+		var x0 = bnd.x0 || 0,
+			y0 = bnd.y0 || 0,
+			w = (bnd.x1 || cvs.width) - x0,
+			h = (bnd.y1 || cvs.height) - y0;
+		return [x0, y0, w, h];
+	}
+	function _getTargetIndex(wgt, evt) {
+		var n = wgt.$n(),
+			x = evt.data.pageX - n.offsetLeft,
+			y = evt.data.pageY - n.offsetTop;
+		for (var drws = wgt._drwbls, i = drws.length, d; i--;) 
+			if ((d = drws[i]) && d.contains(x, y))
+				return i;
+		return -1;
+	}
+	
 /**
  * The ZK component corresponding to HTML 5 Canvas.
  * While HTML 5 Canvas is a command-based DOM object that allows user to draw
@@ -40,7 +60,8 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	
 	setDrwngs: function (drwsJSON) {
 		this._drwbls = canvas.Drawable.createAll(drwsJSON);
-		//this._repaint();
+		if (this.desktop)
+			this._repaint();
 	},
 	setAdd: function (drwJSON) {
 		this.add(canvas.Drawable.create(drwJSON));
@@ -59,8 +80,8 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	 * Removes the Drawable at specific index.
 	 */
 	remove: function (index) {
-		var drw = this._drwbls.splice(index,1);
-		this._repaint();
+		var drw = this._drwbls.splice(index, 1);
+		this._repaint(drw.getBound_());
 		return drw;
 	},
 	setInsert: function (idrwJSON) {
@@ -72,7 +93,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	 */
 	insert: function (index, drw) {
 		this._drwbls.splice(index, 0, drw);
-		this._repaint();
+		this._repaint(drw.getBound_());
 	},
 	setReplace: function (idrwJSON) {
 		var idrw = canvas.Drawable.create(idrwJSON);
@@ -82,8 +103,10 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	 * Replace the Drawable at specific index.
 	 */
 	replace: function (index, drw) {
-		var removed = this._drwbls.splice(index, 1, drw);
-		this._repaint();
+		var removed = this._drwbls.splice(index, 1, drw),
+			bnd0 = removed[0].getBound_(),
+			bnd1 = drw.getBound_();
+		this._repaint(canvas.Drawable._joinBounds(bnd0, bnd1));
 		return removed[0];
 	},
 	setClear: function () {
@@ -108,22 +131,38 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 	
 	
 	// private //
-	_clearCanvas: function () {
-		this._ctx.clearRect(0, 0, this._cvs.width, this._cvs.height);
+	_clearCanvas: function (bnd) {
+		var r = _getRectFromBound(this, bnd);
+		this._ctx.clearRect(r[0], r[1], r[2], r[3]);
 	},
-	_repaint: function (efts) {
-		this._clearCanvas();
-		var sldi = efts ? efts.sldi : null,
-			hvi = efts ? efts.hvi : null;
+	_repaint: function (bnd) {
+		this._clearCanvas(bnd);
+		this._applyBound(bnd);
 		for (var i = 0, drws = this._drwbls, len = drws.length; i < len; i++)
-			this._paint(drws[i], {hv: (hvi == i), sld: (sldi == i)});
+			this._paint(drws[i]);
+		this._unapplyBound();
 	},
-	_paint: function (drw, efts) {
-		// TODO: preload image issue
-		// TODO: refactor for effect
+	_paint: function (drw) {
+		drw.paint_(this); // TODO: rethink design
+		/*
 		drw.applyState_(this);
-		drw.paintObj_(this, efts);
+		drw.paintObj_(this, bnd);
 		drw.unapplyState_(this);
+		*/
+	},
+	_applyBound: function (bnd) {
+		var ctx = this._ctx;
+		ctx.save();
+		if (bnd) {
+			var cvs = this._cvs,
+				r = _getRectFromBound(this, bnd);
+			ctx.beginPath();
+			ctx.rect(r[0], r[1], r[2], r[3]);
+			ctx.clip();
+		}
+	},
+	_unapplyBound: function () {
+		this._ctx.restore();
 	},
 	// state management helper //
 	_applyLocalState: function (st) {
@@ -217,53 +256,20 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		if (this.$n())
 			this.onSize(); // TODO: refine
 	},
-	_getSelected: function (evt) {
-		var n = this.$n(),
-			x = evt.data.pageX - n.offsetLeft,
-			y = evt.data.pageY - n.offsetTop;
-		for (var drws = this._drwbls, i = drws.length, d; i--;) 
-			if ((d = drws[i]) && d.slbl && d.contains(x, y))
-				return i;
-		return -1;
-	},
 	doMouseMove_: function (evt) {
-		var i = this._getSelected(evt),
+		var i = _getTargetIndex(this, evt),
 			pi = this._hvi;
-		
 		if (pi != i) {
-			var	d = i < 0 ? null : this._drwbls[i],
-				pd = pi < 0 ? null : this._drwbls[pi];
-			
-			// TODO: repaint with param
-			/*
-			if (pd && pd.eft)
-				pd.eft.hover(this, pd, pi); // remove hover effect from the previous
-			if (d && d.eft)
-				d.eft.hover(this, d, i, true);
-			*/
-			
-			this.fire('onTooltip', zk.copy(evt.data, {i:i,pi:pi}));
+			this.fire('onTooltip', zk.copy(evt.data, {i: i, pi: pi}));
 			this._hvi = i;
 		}
 		this.$supers('doMouseMove_', arguments);
 	},
 	doClick_: function (evt) {
-		var i = this._getSelected(evt),
-			pi = this._sldi;
-		
+		var i = _getTargetIndex(this, evt),
+			pi = this._sldi; // TODO
 		if (pi != i) {
-			var	d = i < 0 ? null : this._drwbls[i],
-				pd = pi < 0 ? null : this._drwbls[pi];
-			
-			// TODO: repaint with param
-			/*
-			if (pd && pd.eft)
-				pd.eft.select(this, pd, pi); // remove hover effect from the previous
-			if (d && d.eft)
-				d.eft.select(this, d, i, true);
-			*/
-			
-			this.fire('onSelect', zk.copy(evt.data, {i:i,pi:pi}));
+			this.fire('onSelect', zk.copy(evt.data, {i: i, pi: pi}));
 			this._sldi = i;
 		}
 		this.$supers('doClick_', arguments);

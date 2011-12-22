@@ -51,6 +51,8 @@ import org.zkoss.zul.impl.XulElement;
 @SuppressWarnings("serial")
 public class Canvas extends XulElement {
 	
+	// TODO: remove non-Drawable list API
+	
 	private List<Drawable> _drawables;
 	
 	static {
@@ -165,6 +167,8 @@ public class Canvas extends XulElement {
 		add(new CanvasSnapshot(canvas, dx, dy, dw, dh, sx, sy, sw, sh));
 	}
 	
+	// TODO: addAll
+	
 	/**
 	 * Removes the Drawable at specific index.
 	 * @return The removed Drawable
@@ -174,6 +178,8 @@ public class Canvas extends XulElement {
 		smartUpdate("remove", index, true);
 		return removed;
 	}
+	
+	// TODO: removeAll
 	
 	/**
 	 * Clears the Drawable list. The Canvas is also cleared as a result.
@@ -216,6 +222,8 @@ public class Canvas extends XulElement {
 		insert(index, new Text(text, x, y));
 	}
 	
+	// TODO: insertAll
+	
 	/**
 	 * Replace a Drawable at specific index.
 	 * @return The replaced Drawable
@@ -250,6 +258,26 @@ public class Canvas extends XulElement {
 	 */
 	public Drawable replace(int index, String text, double x, double y){
 		return replace(index, new Text(text, x, y));
+	}
+	
+	// TODO: replaceAll
+	
+	/**
+	 * Update the drawable at given index.
+	 */
+	public void update(int index) {
+		replace(index, _drawables.get(index));
+	}
+	
+	/**
+	 * Update the given drawable.
+	 */
+	public void update(Drawable drawable) {
+		int i = _drawables.indexOf(drawable);
+		if (i < 0)
+			throw new IllegalArgumentException("Drawable " + drawable + 
+					"is not a member of canvas " + this);
+		replace(i, drawable);
 	}
 	
 	

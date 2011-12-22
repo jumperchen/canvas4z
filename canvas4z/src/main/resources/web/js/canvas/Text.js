@@ -20,11 +20,7 @@ canvas.Text = zk.$extends(canvas.Drawable, {
 	
 	$init: function (txt, x, y) {
 		this.$super('$init');
-		this.objtp = "text";
-		this.obj = new zk.Object();
-		this.obj.t = txt;
-		this.obj.x = x;
-		this.obj.y = y;
+		this.obj = {t: txt, x: x, y: y};
 	},
 	/**
 	 * 
@@ -46,32 +42,28 @@ canvas.Text = zk.$extends(canvas.Drawable, {
 		case "none":
 			break;
 		case "stroke":
-			this._strkTxt(cvs);
+			this._drawTxt(cvs, true);
 			break;
 		case "both":
-			this._filTxt(cvs);
-			this._strkTxt(cvs);
+			this._drawTxt(cvs);
+			this._drawTxt(cvs, true);
 			break;
 		case "fill":
 		default:
-			this._filTxt(cvs);
+			this._drawTxt(cvs);
 		}
 	},
-	_strkTxt: function(cvs) {
+	_drawTxt: function (cvs, strk) {
 		var t = this.obj;
-		// TODO: merge
-		if (cvs._txtMxW < 0)
-			cvs._ctx.strokeText(t.t, t.x, t.y);
+			fn = strk ? 'strokeText' : 'fillText',
+			txtMxW = cvs._txtMxW;
+		if (txtMxW < 0)
+			cvs._ctx[fn](t.t, t.x, t.y);
 		else
-			cvs._ctx.strokeText(t.t, t.x, t.y, cvs._txtMxW);
+			cvs._ctx[fn](t.t, t.x, t.y, txtMxW);
 	},
-	_filTxt: function(cvs) {
-		var t = this.obj;
-		// TODO: merge
-		if (cvs._txtMxW < 0)
-			cvs._ctx.fillText(t.t, t.x, t.y);
-		else
-			cvs._ctx.fillText(t.t, t.x, t.y, cvs._txtMxW);
+	getBound_: function (cvs) {
+		return null; // TODO: estimate
 	}
-	
+
 });
