@@ -19,7 +19,6 @@ package org.zkoss.canvas.drawable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.zkoss.canvas.DrawableEffect;
 import org.zkoss.canvas.DrawingStyle;
 import org.zkoss.json.JSONAware;
 import org.zkoss.json.JSONObject;
@@ -31,8 +30,6 @@ import org.zkoss.json.JSONObject;
 public abstract class Drawable implements JSONAware, Cloneable {
 	
 	protected DrawingStyle _style;
-	protected boolean _selectable = false;
-	protected DrawableEffect _effect;
 	
 	// TODO: draggable
 	
@@ -50,36 +47,6 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	public abstract String getType();
 	
 	/**
-	 * Returns true if selectable.
-	 */
-	public boolean isSelectable() {
-		return _selectable;
-	}
-	
-	/**
-	 * Set whether this Drawable is selectable.
-	 */
-	public Drawable setSelectable(boolean selectable) {
-		_selectable = selectable;
-		return this;
-	}
-	
-	/**
-	 * Returns the drawable effect.
-	 */
-	public DrawableEffect getEffect() {
-		return _effect;
-	}
-	
-	/**
-	 * Sets the drawable effect.
-	 */
-	public Drawable setEffect(DrawableEffect effect) {
-		_effect = effect;
-		return this;
-	}
-	
-	/**
 	 * Returns a JSON Object representing ONLY the shape.
 	 * The drawing state is covered in toJSONString()
 	 */
@@ -91,11 +58,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 		map.put("objtp", getType());
 		map.put("obj", getShapeJSONObject());
 		map.put("state", _style);
-		if(_selectable)
-			map.put("slbl", true);
 		// TODO: draggable
-		if(_effect != null)
-			map.put("eft", _effect);
 		return JSONObject.toJSONString(map);
 	}
 	

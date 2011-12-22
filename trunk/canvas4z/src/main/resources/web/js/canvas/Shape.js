@@ -146,11 +146,7 @@ canvas.Rectangle = zk.$extends(canvas.Shape, {
 	
 	$init: function (x, y, w, h) {
 		this.$super('$init');
-		this.obj = new zk.Object();
-		this.obj.x = x;
-		this.obj.y = y;
-		this.obj.w = w;
-		this.obj.h = h;
+		this.obj = {x: x, y: y, w: w, h: h};
 	},
 	/**
 	 * 
@@ -191,15 +187,19 @@ canvas.Rectangle = zk.$extends(canvas.Shape, {
 	contains: function (x, y) {
 		if(isNaN(x) || isNaN(y)) 
 			return false;
-		var sx = this.obj.x, 
-			sy = this.obj.y;
+		var obj = this.obj,
+			sx = obj.x, 
+			sy = obj.y;
 		return sx < x 
-			&& x < sx + this.obj.w 
+			&& x < sx + obj.w 
 			&& sy < y 
-			&& y < sy + this.obj.h;
+			&& y < sy + obj.h;
 	},
-	getBoundingRect_: function () {
-		return zk.copy(this.obj);
+	getBound_: function () {
+		var obj = this.obj,
+			x0 = obj.x,
+			y0 = obj.y;
+		return { x0: x0, y0: y0, x1: x0 + obj.w, y1: y0 + obj.h };
 	},
 	paintObj_: function (cvs) {
 		var r = this.obj;
@@ -228,8 +228,7 @@ canvas.Path = zk.$extends(canvas.Shape, {
 	
 	$init: function () {
 		this.$super('$init');
-		this.obj = new zk.Object();
-		this.obj.sg = [];
+		this.obj = {sg: []};
 	},
 	/**
 	 * 
@@ -338,28 +337,30 @@ canvas.Path = zk.$extends(canvas.Shape, {
 					sgdt[j] = sg2dt[j];
 			}
 	},
-	getBoundingRect_: function () {
-		var sgs = this.obj.sg, 
+	getBound_: function () {
+		// TODO: if clipped, return intersecting bound of this and clip
+		var sgs = this.obj.sg,
+			_addToBound = canvas.Drawable._addToBound,
 			bnd = {};
 		for (var i = 0, len = sgs.length; i < len; i++) {
 			var sg = sgs[i],
 				data = sg.dt;
-			switch(sg.tp){
+			switch(sg.tp) {
 			case "bz":
-				_updateBound(bnd, data[4], data[5]);
+				_addToBound(bnd, data[4], data[5]);
 				// no break
 			case "qd":
-				_updateBound(bnd, data[2], data[3]);
+				_addToBound(bnd, data[2], data[3]);
 				// no break
 			case "mv":
 			case "ln":
-				_updateBound(bnd, data[0], data[1]);
+				_addToBound(bnd, data[0], data[1]);
 				break;
 			case "cl":
 				// do nothing
 			}
 		}
-		return bnd; // TODO: check empty
+		return bnd;
 	},
 	paintObj_: function (cvs) {
 		// mimic path drawing based on data

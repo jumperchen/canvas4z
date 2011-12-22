@@ -25,7 +25,7 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	// TODO: extract drawing style info, reduce API
 	
 	$init: function () {
-		this.state = new Object();
+		this.state = {};
 	},
 	/**
 	 * Returns drawing type. 
@@ -298,29 +298,29 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	/**
 	 * Paints the drawable item, including drawing state handling.
 	 */
-	paint_: function (cvs, efts) {
+	paint_: function (cvs, bnd) {
 		this.applyState_(cvs);
-		this.paintObj_(cvs);
+		this.paintObj_(cvs, bnd);
 		this.unapplyState_(cvs);
 	},
 	/**
 	 * Paints the drawable item. Shall be implemented by subclass.
 	 */
-	paintObj_: function (cvs) {},
+	paintObj_: zk.$void,
 	/**
 	 * Imports the data from JSON
 	 */
 	import_: function (drw) {
 		this.importObj_(drw.obj);
 		this.importState_(drw.state);
-		this.slbl = drw.slbl;
+		//this.slbl = drw.slbl; // TODO: remove
 		return this;
 	},
 	/**
 	 * Imports the drawable object data
 	 */
 	importObj_: function (obj) {
-		this.obj = zk.copy({}, obj);
+		this.obj = zk.copy({}, obj); // TODO: check deep values
 		return this;
 	},
 	/**
@@ -332,10 +332,10 @@ canvas.Drawable = zk.$extends(zk.Object, {
 	},
 	/**
 	 * Returns the (nearly) minimal Rectangle which contains the drawable.
+	 * A null return value means the entire canvas viewbox.
 	 */
-	getBoundingRect_: function (cvs) {
-		var cn = this.$n('cnt');
-		return {x: 0, y: 0, w: cn.width, h: cn.height}; // unknown item, return all view port
+	getBound_: function (cvs) {
+		return null; // unknown object, return all to be save
 	}
 	
 },{
@@ -363,11 +363,30 @@ canvas.Drawable = zk.$extends(zk.Object, {
 			arr.push(canvas.Drawable.create(drws[i]));
 		return arr;
 	},
-	/**
-	 * Joins bnd1 range into bnd0.
-	 */
-	_joinBound: function (bnd0, bnd1) {
-		// TODO
+	_addToBound: function (bnd, x, y) {
+		if (!bnd)
+			return;
+		var x0 = bnd.x0,
+			x1 = bnd.x1,
+			y0 = bnd.y0,
+			y1 = bnd.y1;
+		if (x0 == undefined || x < x0)
+			bnd.x0 = x;
+		if (x1 == undefined || x > x1)
+			bnd.x1 = x;
+		if (y0 == undefined || y < y0)
+			bnd.y0 = y;
+		if (y1 == undefined || y > y1)
+			bnd.y1 = y;
+	},
+	_joinBounds: function (bnd0, bnd1) {
+		if (!bnd0 || !bnd1)
+			return null;
+		var b = zk.copy(bnd0),
+			_addToBound = canvas.Drawable._addToBound;
+		_addToBound(b, bnd1.x0, bnd1.y0);
+		_addToBound(b, bnd1.x1, bnd1.y1);
+		return b;
 	}
 	
 });

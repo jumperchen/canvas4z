@@ -27,10 +27,9 @@ canvas.Composite = zk.$extends(canvas.Drawable, {
 				return true; // TODO: find a way to return index
 		return false;
 	},
-	getBoundingRect_: function () {
-		var bnd = {};
-		for (var drws = this.obj, i = drws.length, d; i--;)
-			canvas.Drawable._join(bnd, d.getBoundingRect_());
+	getBound_: function () {
+		for (var drws = this.obj, i = drws.length, bnd; i--;)
+			bnd = canvas.Drawable._joinBounds(bnd, drws[i].getBound_());
 		return bnd;
 	},
 	paintObj_: function (cvs) {
