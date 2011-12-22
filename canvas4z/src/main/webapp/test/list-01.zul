@@ -1,0 +1,6 @@
+<zk>
+	<window apply="org.zkoss.canvas.test.ListTestController">
+		<canvas id="cvs" width="700px" height="500px" />
+		<window></window>
+	</window>
+</zk>
