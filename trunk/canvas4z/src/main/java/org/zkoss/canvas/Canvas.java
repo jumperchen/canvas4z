@@ -16,25 +16,20 @@ Copyright (C) 2010 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.canvas;
 
-import java.awt.geom.Path2D;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-import org.zkoss.canvas.drawable.CanvasSnapshot;
 import org.zkoss.canvas.drawable.Drawable;
-import org.zkoss.canvas.drawable.ImageSnapshot;
-import org.zkoss.canvas.drawable.Path;
-import org.zkoss.canvas.drawable.Rectangle;
-import org.zkoss.canvas.drawable.Text;
+import org.zkoss.canvas.util.AbstractProxyList;
+import org.zkoss.json.JSONArray;
 import org.zkoss.json.JSONObject;
 import org.zkoss.json.JSONValue;
 import org.zkoss.zk.au.AuRequest;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.sys.ContentRenderer;
-import org.zkoss.zul.Image;
 import org.zkoss.zul.impl.XulElement;
 
 /**
@@ -51,187 +46,104 @@ import org.zkoss.zul.impl.XulElement;
 @SuppressWarnings("serial")
 public class Canvas extends XulElement {
 	
-	// TODO: remove non-Drawable list API
-	
-	private List<Drawable> _drawables;
+	protected CanvasProxyList _drawables = 
+		new CanvasProxyList(new ArrayList<Drawable>());
 	
 	static {
 		addClientEvent(Canvas.class, CanvasMouseEvent.ON_TOOLTIP, CE_REPEAT_IGNORE);
 		addClientEvent(Canvas.class, CanvasMouseEvent.ON_SELECT, 0);
 	}
 	
-	public Canvas() {
-		_drawables = new ArrayList<Drawable>();
-	}
-	
 	/**
 	 * Return a list of all drawings in Canvas.
 	 */
-	public List<Drawable> getAllDrawables(){
-		return Collections.unmodifiableList(_drawables);
+	public List<Drawable> getDrawables() {
+		return _drawables;
 	}
 	
 	/**
 	 * Returns the drawing at position index. 
 	 * @param index: drawings at 0 is the earliest drawing.
 	 */
-	public Drawable getDrawable(int index){
+	public Drawable getDrawable(int index) {
 		return _drawables.get(index);
 	}
 	
 	/**
 	 * Return true if the list is empty.
 	 */
-	public boolean isEmpty(){
+	public boolean isEmpty() {
 		return _drawables.isEmpty();
 	}
 	
 	/**
-	 * Returns the size of Drawable lists
+	 * Return the size of Drawable lists
 	 */
-	public int size(){
+	public int size() {
 		return _drawables.size();
 	}
-	
-	/**
-	 * Adds the Drawable object to the end of the list.
-	 */
-	public void add(Drawable drawable){
-		_drawables.add(cloneIfPossible(drawable));
-		smartUpdate("add", drawable.toJSONString(), true);
-	}
-	
-	/**
-	 * Adds a Java 2D Path object.
-	 */
-	public void add(Path2D.Double path){
-		add(new Path(path));
-	}
-	
-	/**
-	 * Adds a Java 2D Rectangle object.
-	 */
-	public void add(Rectangle2D.Double rectangle){
-		add(new Rectangle(rectangle));
-	}
-	
-	/**
-	 * Adds a Text object.
-	 */
-	public void add(String text, double x, double y){
-		add(new Text(text, x, y));
-	}
-	
-	// TODO: delegate other image type
-	/**
-	 * Adds an Image snapshot
-	 */
-	public void add(Image image, double dx, double dy){
-		add(new ImageSnapshot(image, dx, dy));
-	}
-	
-	/**
-	 * Adds an Image snapshot
-	 */
-	public void add(Image image, double dx, double dy, double dw, double dh){
-		add(new ImageSnapshot(image, dx, dy, dw, dh));
-	}
-	
-	/**
-	 * Adds an Image snapshot
-	 */
-	public void add(Image image, double dx, double dy, double dw, double dh,
-			double sx, double sy, double sw, double sh){
-		add(new ImageSnapshot(image, dx, dy, dw, dh, sx, sy, sw, sh));
-	}
-	
-	/**
-	 * Adds a Canvas snapshot
-	 */
-	public void add(Canvas canvas, double dx, double dy){
-		add(new CanvasSnapshot(canvas, dx, dy));
-	}
-	
-	/**
-	 * Adds a Canvas snapshot
-	 */
-	public void add(Canvas canvas, double dx, double dy, double dw, double dh){
-		add(new CanvasSnapshot(canvas, dx, dy, dw, dh));
-	}
-	
-	/**
-	 * Adds a Canvas snapshot
-	 */
-	public void add(Canvas canvas, double dx, double dy, double dw, double dh,
-			double sx, double sy, double sw, double sh){
-		add(new CanvasSnapshot(canvas, dx, dy, dw, dh, sx, sy, sw, sh));
-	}
-	
-	// TODO: addAll
-	
-	/**
-	 * Removes the Drawable at specific index.
-	 * @return The removed Drawable
-	 */
-	public Drawable remove(int index){
-		Drawable removed = _drawables.remove(index);
-		smartUpdate("remove", index, true);
-		return removed;
-	}
-	
-	// TODO: removeAll
 	
 	/**
 	 * Clears the Drawable list. The Canvas is also cleared as a result.
 	 */
 	public void clear(){
-		_drawables.clear();
+		_drawables.inner().clear();
 		smartUpdate("clear", null);
 	}
 	
 	/**
-	 * Inserts the Drawable at specific index
+	 * Add the Drawable objects to the end of the list.
+	 */
+	public boolean add(Drawable ... drawables) {
+		_drawables.inner().addAll(Arrays.asList(drawables));
+		smartUpdate("addAll", JSONArray.toJSONString(drawables), true);
+		return drawables.length > 0;
+	}
+	
+	/**
+	 * Removes the Drawable at specific index.
+	 * @return The removed Drawable
+	 */
+	public Drawable remove(int index) {
+		Drawable removed = _drawables.inner().remove(index);
+		smartUpdate("remove", index, true);
+		return removed;
+	}
+	
+	/**
+	 * Remove the given object from Drawable list
+	 * @return true if the list is changed
+	 */
+	public boolean remove(Object obj) {
+		int index = _drawables.indexOf(obj);
+		if (index < 0)
+			return false;
+		remove(index);
+		return true;
+	}
+	
+	/**
+	 * Insert Drawables at specific index
 	 */
 	@SuppressWarnings("unchecked")
-	public void insert(int index, Drawable drawable){
-		_drawables.add(index, cloneIfPossible(drawable));
+	public boolean add(int index, Drawable ... drawables){
+		if (drawables.length == 0)
+			return false;
+		_drawables.inner().addAll(index, Arrays.asList(drawables));
 		JSONObject args = new JSONObject();
 		args.put("i", index);
-		args.put("drw", drawable);
+		args.put("drws", drawables);
 		smartUpdate("insert", args, true);
+		return true;
 	}
-	
-	/**
-	 * Inserts a Path.
-	 */
-	public void insert(int index, Path2D.Double path){
-		insert(index, new Path(path));
-	}
-	
-	/**
-	 * Inserts a Rectangle.
-	 */
-	public void insert(int index, Rectangle2D.Double rectangle){
-		insert(index, new Rectangle(rectangle));
-	}
-	
-	/**
-	 * Inserts a piece of Text.
-	 */
-	public void insert(int index, String text, double x, double y){
-		insert(index, new Text(text, x, y));
-	}
-	
-	// TODO: insertAll
 	
 	/**
 	 * Replace a Drawable at specific index.
 	 * @return The replaced Drawable
 	 */
 	@SuppressWarnings("unchecked")
-	public Drawable replace(int index, Drawable drawable){
-		Drawable removed = _drawables.remove(index);
-		_drawables.add(index, cloneIfPossible(drawable));
+	public Drawable set(int index, Drawable drawable){
+		Drawable removed = _drawables.inner().set(index, drawable);
 		JSONObject args = new JSONObject();
 		args.put("i", index);
 		args.put("drw", drawable);
@@ -239,34 +151,13 @@ public class Canvas extends XulElement {
 		return removed;
 	}
 	
-	/**
-	 * Replaces a Path.
-	 */
-	public Drawable replace(int index, Path2D.Double path){
-		return replace(index, new Path(path));
-	}
-	
-	/**
-	 * Replaces a Rectangle.
-	 */
-	public Drawable replace(int index, Rectangle2D.Double rectangle){
-		return replace(index, new Rectangle(rectangle));
-	}
-	
-	/**
-	 * Replaces a piece of Text.
-	 */
-	public Drawable replace(int index, String text, double x, double y){
-		return replace(index, new Text(text, x, y));
-	}
-	
 	// TODO: replaceAll
 	
 	/**
 	 * Update the drawable at given index.
 	 */
-	public void update(int index) {
-		replace(index, _drawables.get(index));
+	public void update(int index) { // TODO: range
+		set(index, _drawables.get(index));
 	}
 	
 	/**
@@ -277,22 +168,12 @@ public class Canvas extends XulElement {
 		if (i < 0)
 			throw new IllegalArgumentException("Drawable " + drawable + 
 					"is not a member of canvas " + this);
-		replace(i, drawable);
+		set(i, drawable);
 	}
 	
 	
 	
-	// helper //
-	private static Drawable cloneIfPossible(Drawable drawable){
-		/*
-		try {
-			return (Drawable) drawable.clone();
-		} catch (CloneNotSupportedException e) {}
-		*/
-		return drawable;
-	}
-	
-	// service //
+	// super //
 	public void service(AuRequest request, boolean everError) {
 		final String cmd = request.getCommand();
 		if (cmd.equals(CanvasMouseEvent.ON_SELECT) || 
@@ -303,7 +184,6 @@ public class Canvas extends XulElement {
 			super.service(request, everError);
 	}
 	
-	// super //
 	protected void renderProperties(ContentRenderer renderer) 
 		throws IOException {
 		
@@ -314,6 +194,55 @@ public class Canvas extends XulElement {
 	
 	public String getZclass() {
 		return _zclass == null ? "z-canvas" : _zclass;
+	}
+	
+	
+	
+	// helper //
+	
+	// proxy list //
+	private class CanvasProxyList extends AbstractProxyList<Drawable> {
+		
+		private CanvasProxyList(List<Drawable> list) { super(list); }
+		private List<Drawable> inner() { return _list; }
+		
+		@Override
+		public void clear() {
+			Canvas.this.clear();
+		}
+		@Override
+		public boolean add(Drawable e) {
+			return Canvas.this.add(e);
+		}
+		@Override
+		public boolean addAll(Collection<? extends Drawable> c) {
+			return Canvas.this.add(c.toArray(new Drawable[0]));
+		}
+		@Override
+		public void add(int index, Drawable element) {
+			Canvas.this.add(index, element);
+		}
+		@Override
+		public boolean addAll(int index, Collection<? extends Drawable> c) {
+			return Canvas.this.add(index, c.toArray(new Drawable[0]));
+		}
+		@Override
+		public boolean remove(Object o) {
+			return Canvas.this.remove(o);
+		}
+		@Override
+		public Drawable remove(int index) {
+			return Canvas.this.remove(index);
+		}
+		@Override
+		public Drawable set(int index, Drawable element) {
+			return Canvas.this.set(index, element);
+		}
+		@Override
+		public List<Drawable> subList(int fromIndex, int toIndex) {
+			throw new UnsupportedOperationException(); // TODO
+		}
+		
 	}
 	
 }

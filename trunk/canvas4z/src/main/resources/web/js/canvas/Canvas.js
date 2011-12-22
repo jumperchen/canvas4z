@@ -63,8 +63,8 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		if (this.desktop)
 			this._repaint();
 	},
-	setAdd: function (drwJSON) {
-		this.add(canvas.Drawable.create(drwJSON));
+	setAddAll: function (drwsJSON) { // called by server
+		this.addAll(canvas.Drawable.createAll(drwsJSON));
 	},
 	/**
 	 * Adds a Drawable to canvas.
@@ -73,43 +73,48 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		this._paint(drw);
 		this._drwbls.push(drw);
 	},
-	setRemove: function (index) {
+	addAll: function (drws) {
+		for (var i = 0, len = drws.length; i < len; i++)
+			this.add(drws[i]);
+	},
+	setRemove: function (index) { // called by server
 		this.remove(index);
 	},
 	/**
 	 * Removes the Drawable at specific index.
 	 */
-	remove: function (index) {
+	remove: function (index) { // TODO: remove batch
 		var drw = this._drwbls.splice(index, 1);
 		this._repaint(drw.getBound_());
 		return drw;
 	},
-	setInsert: function (idrwJSON) {
-		var idrw = canvas.Drawable.create(idrwJSON);
-		this.insert(idrw.i, idrw.drw);
+	setInsert: function (idrwsJSON) { // called by server
+		var idrws = canvas.Drawable.createAll(idrwsJSON);
+		this.insert(idrws.i, idrws.drws);
 	},
 	/**
 	 * Inserts a Drawable at specific index.
 	 */
-	insert: function (index, drw) {
-		this._drwbls.splice(index, 0, drw);
-		this._repaint(drw.getBound_());
+	insert: function (index, drws) {
+		var drwbls = this._drwbls; 
+		drwbls.splice.apply(drwbls, [index, 0].concat(drws));
+		this._repaint(/*drw.getBound_()*/); // TODO: get all bounds
 	},
-	setReplace: function (idrwJSON) {
+	setReplace: function (idrwJSON) { // called by server
 		var idrw = canvas.Drawable.create(idrwJSON);
 		this.replace(idrw.i, idrw.drw);
 	},
 	/**
 	 * Replace the Drawable at specific index.
 	 */
-	replace: function (index, drw) {
+	replace: function (index, drw) { // TODO: replace batch
 		var removed = this._drwbls.splice(index, 1, drw),
 			bnd0 = removed[0].getBound_(),
 			bnd1 = drw.getBound_();
 		this._repaint(canvas.Drawable._joinBounds(bnd0, bnd1));
 		return removed[0];
 	},
-	setClear: function () {
+	setClear: function () { // called by server
 		this.clear();
 	},
 	/**
@@ -135,7 +140,7 @@ canvas.Canvas = zk.$extends(zul.Widget, {
 		var r = _getRectFromBound(this, bnd);
 		this._ctx.clearRect(r[0], r[1], r[2], r[3]);
 	},
-	_repaint: function (bnd) {
+	_repaint: function (bnd) { // TODO: setTimeout
 		this._clearCanvas(bnd);
 		this._applyBound(bnd);
 		for (var i = 0, drws = this._drwbls, len = drws.length; i < len; i++)
