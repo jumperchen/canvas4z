@@ -36,7 +36,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * 
 	 */
-	public Drawable(){
+	public Drawable() {
 		_style = new DrawingStyle();
 	}
 	
@@ -78,7 +78,7 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	}
 	
 	/**
-	 * Handle drawing style by a callback/functor.
+	 * Handle drawing style by a callback.
 	 */
 	public Drawable setStyle(StyleSetter setter) {
 		setter.set(_style);
@@ -92,8 +92,9 @@ public abstract class Drawable implements JSONAware, Cloneable {
 	/**
 	 * Uses the state from another Drawable. 
 	 */
-	public void copyStyleFrom(Drawable drawable) {
+	public Drawable copyStyleFrom(Drawable drawable) {
 		_style = new DrawingStyle(drawable._style);
+		return this;
 	}
 	
 }
