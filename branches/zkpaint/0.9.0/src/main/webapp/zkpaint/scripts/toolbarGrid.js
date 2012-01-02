@@ -93,7 +93,7 @@ canvas.ToolbarGrid = zk.$extends(zul.grid.Grid, {
 	},
 	
 	changeTextMode: function () {
-		if (zk.ie) {
+		if (zk.ie < 9) {
 			alert("Sorry, this feature is not supported in IE.");
 			return;			
 		}
@@ -106,11 +106,11 @@ canvas.ToolbarGrid = zk.$extends(zul.grid.Grid, {
 		this.paintDiv.setMode('to-draw');
 		switchHighlight(this, 2);
 	},
+	
 	changeArrowMode: function () {
 		this.paintDiv.setMode('to-draw-arrow');
 		switchHighlight(this, 2);
 	},
-	
 	
 	changeShapeIndex: function () {
 		this.paintDiv.setShapeIndex(this.shapeBox.getSelectedIndex());
