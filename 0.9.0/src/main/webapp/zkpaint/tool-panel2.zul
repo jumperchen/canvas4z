@@ -3,6 +3,7 @@
 <zk xmlns:w="client">
 	<script type="text/javascript" src="zkpaint/scripts/toolbarGrid.js" />
 	<grid zclass="zkpaint-tool-grid" w:use="canvas.ToolbarGrid">
+		<custom-attributes disableText="${c:browser('ie6-') || c:browser('ie7-')|| c:browser('ie8-')}"/>
 		<columns>
 			<column align="center" hflex="min"/>
 			<column align="center" hflex="min"/>
@@ -18,12 +19,12 @@
 			<column align="center" hflex="min" />
 			<column align="center" hflex="min" />
 			<column align="center" hflex="min" />
-			<column align="center" hflex="min" />
 		</columns>
 		<rows>
 			<row>
 				<!-- Select -->
 				<button image="zkpaint/img/open-file.png" width="40px" upload="true" forward="onUpload=onLoad"/>
+				
 				<cell rowspan="2">
 					<!-- select single -->
 					<button id="selectBtn" orient="vertical"
@@ -37,16 +38,16 @@
 				<cell rowspan="2">
 					<!-- select single -->
 					<button id="textBtn" orient="vertical" label="Text"
-						image="zkpaint/img/text-btn.png" width="55px"/>
+						image="zkpaint/img/text-btn.png" width="55px" disabled="${disableText}"/>
 				</cell>
 				
 				<hlayout>
-					<listbox id="fontBox" mold="select" disabled="${c:isExplorer()}">
+					<listbox id="fontBox" mold="select" disabled="${disableText}">
 						<listitem label="Serif" value="serif" selected="true"/>
 						<listitem label="Sans Serif" value="sans-serif" />
 						<listitem label="Monospace" value="monospace" />
 					</listbox>
-					<intbox id="fontSizeBox" value="30" maxlength="3" disabled="${c:isExplorer()}"
+					<intbox id="fontSizeBox" value="30" maxlength="3" disabled="${disableText}"
 						width="30px" />
 					px
 				</hlayout>
@@ -85,14 +86,11 @@
 				<slider id="alphaSlider" curpos="100" maxpos="100"
 					width="100px" />
 
-				<cell rowspan="3">
-					<separator/>
-				</cell>
 			</row>
 
 			<row>
 				<button image="zkpaint/img/save-file.png" forward="onSave"/>
-				<textbox id="textBox" value="ZK not just UI" disabled="${c:isExplorer()}"
+				<textbox id="textBox" value="ZK not just UI" disabled="${disableText}"
 					style="font-family: serif;" height="20px" hflex="1" />
 				<label value="Fill:" />
 				<listbox id="fillTypeBox" mold="select">

@@ -1,6 +1,13 @@
 package org.zkoss.canvas.zkpaint2;
 
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Ellipse2D.Double;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,25 +15,33 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+
+import org.apache.commons.codec.binary.Base64;
 import org.zkoss.canvas.Canvas;
 import org.zkoss.canvas.DrawingStyle;
 import org.zkoss.canvas.drawable.Drawable;
+import org.zkoss.canvas.drawable.ImageSnapshot;
 import org.zkoss.canvas.drawable.Path;
 import org.zkoss.canvas.drawable.Rectangle;
 import org.zkoss.canvas.drawable.Shape;
 import org.zkoss.canvas.drawable.Text;
+import org.zkoss.image.AImage;
 import org.zkoss.json.JSONArray;
 import org.zkoss.json.JSONObject;
 import org.zkoss.json.JSONValue;
 import org.zkoss.lang.Objects;
 import org.zkoss.lang.Strings;
 import org.zkoss.zk.au.AuRequest;
+import org.zkoss.zk.au.out.AuInvoke;
 import org.zkoss.zk.au.out.AuSetAttribute;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.ext.AfterCompose;
 import org.zkoss.zk.ui.sys.ContentRenderer;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Filedownload;
+import org.zkoss.zul.Image;
 
 public class PaintDiv extends Div implements AfterCompose {
 	
@@ -41,6 +56,7 @@ public class PaintDiv extends Div implements AfterCompose {
 	private List<Shape> shapeCategory;
 	
 	private Canvas canvas;
+	private Image imgArea;
 	
 	private Number arrowWidth = 3;
 	private Number tipWidth = 10;
@@ -50,6 +66,8 @@ public class PaintDiv extends Div implements AfterCompose {
 	private List<Integer> _selShapeIndexes;
 	
 	private Map<Text, Integer[]> _textSizeMap = new HashMap<Text, Integer[]>();
+	
+	private StringBuffer pngStreamSb = new StringBuffer();
 	
 	public void afterCompose() {
 		setWidgetClass("canvas.PaintDiv");
@@ -67,9 +85,19 @@ public class PaintDiv extends Div implements AfterCompose {
 		canvas.setStyle("position:absolute; " +
 			"z-index:1; " +
 			"width:"+w+"; height:"+h+"; "+
-			"background-color:white");
+			"left:0px;top:0px;background-color:white;");
 		
+		
+		appendChild(imgArea = new Image());
+		imgArea.setZindex(0);
+		imgArea.setStyle("display: none;");
 		appendChild(canvas);
+		
+		imgArea.setWidgetListener("onBind", 
+			"var self = this;this.$n().onload = function(){" +
+			"zAu.send(new zk.Event(self.parent, 'onImageReady'));};");
+		
+		
 	}
 
 	public String getStrokeColor() {
@@ -176,7 +204,6 @@ public class PaintDiv extends Div implements AfterCompose {
 			o.put("tipLength", tipLength);
 			smartUpdate("arrowAttrs",  o);
 		}
-		
 	}
 	
 	@Override
@@ -184,7 +211,12 @@ public class PaintDiv extends Div implements AfterCompose {
 		String name = request.getCommand();
 		
 		Map data = (Map) request.getData();
-		if ("onAddText".equals(name)) {
+		if ("onImageReady".equals(name)) {
+			if (imgArea.getContent() != null) {
+				canvas.add(new ImageSnapshot(imgArea, 0, 0));
+				Events.postEvent(new Event(name, this));
+			}
+		} else if ("onAddText".equals(name)) {
 			Text txt = new Text(getText(), getDouble(data, "x"), getDouble(data, "y"));
 			txt.getDrawingStyle().setFont(getFont());
 			setDrawingState(txt.getDrawingStyle());
@@ -248,6 +280,7 @@ public class PaintDiv extends Div implements AfterCompose {
 			int i = 0;
 			for (Drawable d : canvas.getAllDrawables()) {
 				boolean intersected = false;
+				
 				if (d instanceof Shape) {
 					Shape s = (Shape) d;
 					intersected = s.intersects(x, y, w, h);
@@ -303,6 +336,23 @@ public class PaintDiv extends Div implements AfterCompose {
 			}
 			response(new AuSetAttribute(this, "selDrawables", 
 					JSONArray.toJSONString(_selShapes)));
+		} else if ("onSendPngData".equals(name)) {
+			String imageByte = String.valueOf(data.get("imageByte"));
+			Boolean isFinished = (Boolean) data.get("isFinished");
+			
+			pngStreamSb.append(imageByte);
+			
+			if (isFinished) {
+				String s = pngStreamSb.toString();
+				byte[] decoded = Base64.decodeBase64(
+						s.substring(s.indexOf(",") + 1));
+				
+				pngStreamSb = new StringBuffer();
+				
+				data.clear();
+				data.put("byteData", decoded);
+				Events.postEvent(new Event("onExportPng", this, data));
+			}
 		} else
 			super.service(request, everError);
 	}
@@ -347,6 +397,21 @@ public class PaintDiv extends Div implements AfterCompose {
 	
 	public List<Drawable> getAllDrawables() {
 		return canvas.getAllDrawables();
+	}
+	
+	public void setContent(org.zkoss.image.Image img) {
+		imgArea.setContent(img);
+		
+		int w = img.getWidth();
+		int h = img.getHeight();
+		canvas.setWidth(w + "px");
+		canvas.setHeight(h + "px");
+		smartUpdate("ghostCanvasSize", new Integer[]{w, h});
+	}
+	
+	public void exportPng() {
+		pngStreamSb = new StringBuffer();
+		response(new AuInvoke(this, "exportPng"));
 	}
 	
 	@Override
@@ -409,4 +474,37 @@ public class PaintDiv extends Div implements AfterCompose {
 		return val == null ? 0: ((Number) val).intValue();
 	}
 
+	private static class DrawInfo {
+		private DrawingStyle ds;
+		
+		public DrawInfo(DrawingStyle ds) {
+			super();
+			this.ds = ds;
+		}
+		
+		private Color getColor(String color) {
+			return new Color(Integer.parseInt(color.substring(1), 16));
+		}
+		
+		public Color getStrokeColor() {
+			return getColor(ds.getStrokeStyle().toString());
+		}
+		
+		public Color getFillColor() {
+			return getColor(ds.getFillStyle().toString());
+		}
+		
+		public boolean shallDrawStroke() {
+			String drawingType = ds.getDrawingType();
+			return DrawingStyle.DrawingType.BOTH.equals(drawingType) ||
+				DrawingStyle.DrawingType.STROKE.equals(drawingType);
+		}
+		
+		public boolean shallFill() {
+			String drawingType = ds.getDrawingType();
+			return DrawingStyle.DrawingType.BOTH.equals(drawingType) ||
+				DrawingStyle.DrawingType.FILL.equals(drawingType);
+		}
+	}
+	
 }

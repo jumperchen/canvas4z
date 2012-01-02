@@ -84,39 +84,20 @@ zk.load("zul.wgt, canvas", function () {
 		});
 	}
 	
+	function setCanvasSize(cvs, w, h) {
+		var n = cvs.$n();
+		if (n) {
+			cvs._width = w;
+			n.style.width = w || '';
+			cvs._height = h;
+			n.style.height = h || '';
+			cvs._init();
+		}
+	}
+	
 canvas.PaintDiv = zk.$extends(zul.wgt.Div, {
 	_alpha: 0,
 	_shapeIndex: 0,
-	
-	$init: function () {
-		this.$supers('$init', arguments);
-		
-		this._frame = new canvas.Rectangle(0,0,0,0).setDrawingType("stroke");
-		
-		// global state
-		this._start = {x:0, y:0};
-		this._last = {x:0, y:0};
-		
-		var textObj = this._textObj = new canvas.Text("", 0, 0);
-		textObj.setDrawingType('both');
-		textObj.setAlpha(1);
-		
-		this._path = new canvas.Path();
-		
-		this._arrowTmp = new canvas.Path().moveTo(0, 0).lineTo(0, 0).lineTo(0, 0)
-			.lineTo(0, 0).lineTo(0, 0).lineTo(0, 0)
-			.lineTo(0, 0).lineTo(0, 0)
-			.lineTo(0, 0).closePath();
-		
-		this._mouseHandler = this._selectShapeHandler = new canvas.SelectShapeHandler(this);
-		this._drawTextHandler = new canvas.DrawTextHandler(this);
-		this._drawShapeHandler = new canvas.DrawShapeHandler(this);
-		this._drawArrowHandler = new canvas.DrawArrowHandler(this);
-		this._selectMovingShapeHandler  = new canvas.SelectMovingShapeHandler (this);
-		
-		this._arrowAttrs = {
-			arrowWidth: 3, tipWidth: 10, tipLength: 15};
-	},
 	
 	$define: {
 		strokeColor: function (color) {
@@ -173,6 +154,33 @@ canvas.PaintDiv = zk.$extends(zul.wgt.Div, {
   	bind_: function (desktop, skipper, after) {
 		this.$supers('bind_', arguments);
 		
+		this._frame = new canvas.Rectangle(0,0,0,0).setDrawingType("stroke");
+		
+		// global state
+		this._start = {x:0, y:0};
+		this._last = {x:0, y:0};
+		
+		var textObj = this._textObj = new canvas.Text("", 0, 0);
+		textObj.setDrawingType('both');
+		textObj.setAlpha(1);
+		
+		this._path = new canvas.Path();
+		
+		this._arrowTmp = new canvas.Path().moveTo(0, 0).lineTo(0, 0).lineTo(0, 0)
+			.lineTo(0, 0).lineTo(0, 0).lineTo(0, 0)
+			.lineTo(0, 0).lineTo(0, 0)
+			.lineTo(0, 0).closePath();
+		
+		this._mouseHandler = this._selectShapeHandler = new canvas.SelectShapeHandler(this);
+		this._drawTextHandler = new canvas.DrawTextHandler(this);
+		this._drawShapeHandler = new canvas.DrawShapeHandler(this);
+		this._drawArrowHandler = new canvas.DrawArrowHandler(this);
+		this._selectMovingShapeHandler  = new canvas.SelectMovingShapeHandler (this);
+		
+		this._arrowAttrs = {
+			arrowWidth: 3, tipWidth: 10, tipLength: 15};
+		
+		
 		this.listen({
 			onClick: this,
 		 	onMouseDown: this,
@@ -185,7 +193,26 @@ canvas.PaintDiv = zk.$extends(zul.wgt.Div, {
 			this._ghostCvs = new canvas.Canvas({
 				width: this.getWidth() || '100%',
 				height: this.getHeight() || '100%',
-				style: 'position:absolute; z-index:2'}));
+				style: 'position:absolute; z-index:2;left:0px;top:0px;'}));
+		
+		var ghostCvs = this._ghostCvs
+			cvs = ghostCvs.previousSibling;
+		ghostCvs._scaleX = 1;
+		ghostCvs._scaleY = 1;
+		
+		
+		cvs.onSize = cvs.onShow = 
+		ghostCvs.onSize = ghostCvs.onShow = function () {
+			this._init();
+			this._ctx.scale(ghostCvs._scaleX, ghostCvs._scaleY);
+			this._repaint();
+		};
+		
+		cvs._clearCanvas = ghostCvs._clearCanvas = function () {
+			this._ctx.clearRect(0, 0, 
+				this._cvs.width / ghostCvs._scaleX, 
+				this._cvs.height / ghostCvs._scaleY);
+		};
     },
 	
 	setMode: function (mode) {
@@ -227,8 +254,6 @@ canvas.PaintDiv = zk.$extends(zul.wgt.Div, {
 			} else if (mode == 'to-draw')
 				dwa.setLineWidth(2);
 		}
-		
-		
 	},
 	
 	//do click
@@ -237,14 +262,20 @@ canvas.PaintDiv = zk.$extends(zul.wgt.Div, {
 	},
 	
 	onMouseDown: function (event) {
+		if (jq.nodeName(event.domTarget, 'div'))
+			return;
 		this._mouseHandler.doMouseDown(event);
 	},
 	
 	onMouseMove: function (event) {
-		var pos = getMousePos(event, getElementPos(this._ghostCvs.$n()));
+		var ghostCvs = this._ghostCvs,
+			pos = getMousePos(event, getElementPos(ghostCvs.$n()));
 		
-		if (sigDiff(pos, this._last))
-			this._mouseHandler.doMouseMove(pos);
+		if (sigDiff(pos, this._last)) {
+			pos.x = pos.x / ghostCvs._scaleX;
+			pos.y = pos.y / ghostCvs._scaleY;
+			this._mouseHandler.doMouseMove(pos, event);
+		}
 	},
 	
 	onMouseUp: function (event) {
@@ -258,7 +289,7 @@ canvas.PaintDiv = zk.$extends(zul.wgt.Div, {
 				return;
 			this._ghostCvs.clear();
 			this._cancelMoving = true;
-			this._mouseHandler._down = false;
+			this._mouseHandler.doMouseOut(event);
 		}
 	},
 	
@@ -285,6 +316,69 @@ canvas.PaintDiv = zk.$extends(zul.wgt.Div, {
 	
 	setSelDrawables: function (selDrawables) {
 		this._selDrawables = canvas.Drawable.createAll(selDrawables);
+	},
+	
+	setGhostCanvasSize: function (size) {
+		var ghostCvs = this._ghostCvs,
+			$ghostNode = jq(ghostCvs.$n()),
+			cvs = ghostCvs.previousSibling,
+			scaleX = ghostCvs._scaleX,
+			scaleY = ghostCvs._scaleY,
+			w = size[0],
+			h = size[1];
+			
+		if (scaleX != 1 || scaleX != 1) {
+			
+			w *= scaleX;
+			h *= scaleY;
+			
+			setCanvasSize(cvs, jq.px0(w), jq.px0(h));
+			setCanvasSize(ghostCvs, jq.px0(w), jq.px0(h));
+			
+			ghostCvs._ctx.scale(scaleX, scaleY);
+			ghostCvs._repaint();
+			cvs._ctx.scale(scaleX, scaleY);
+			cvs._repaint();
+		} else {
+			this._ghostCvs.setWidth(jq.px0(w));
+			this._ghostCvs.setHeight(jq.px0(h));
+		}
+		if (zk.safari)
+			zk(this).redoCSS();
+		
+		
+	},
+	
+	exportPng: function () {
+		var ghostCvs = this._ghostCvs,
+			$ghostNode = jq(ghostCvs.$n()),
+			cvs = ghostCvs.previousSibling,
+			self = this,
+			data = cvs._ctx.canvas.toDataURL('image/png'),
+			len = data.length,
+			maxSize = 1000000,
+			count = zk.parseInt(len / maxSize) + 1,
+			i = count,
+			last = len % maxSize,
+			index = 0,
+			isFinished = false,
+			dataTimer;
+		if (!len) return;
+		
+		zAu.cmd0.showBusy('Exporting...');
+		dataTimer = setInterval(function () {
+			i--;
+			zAu.cmd0.showBusy('Exporting...('+Math.round((count-i)/count * 100)+'%)');
+			if (!i) {
+				maxSize = last;
+				clearInterval(dataTimer);	
+				isFinished = true;	
+				zAu.cmd0.clearBusy();	
+			}
+			zAu.send(new zk.Event(self, 'onSendPngData', 
+				{imageByte: data.substr(index, maxSize), isFinished: isFinished}));
+			index += maxSize;
+		}, 1000);
 	},
 	
 	unbind_: function () {
@@ -315,28 +409,40 @@ canvas.MouseHandler = zk.$extends(zk.Object, {
 	doClick: zk.$void,
 	doMouseDown: function(event){
 		this._down = true;
+		
+		var wgt = this.wgt,
+			ghostCvs = wgt._ghostCvs,
+			start = wgt._start = getMousePos(event, getElementPos(ghostCvs.$n()));
+		start.x = start.x / ghostCvs._scaleX;
+		start.y = start.y / ghostCvs._scaleY;
+		
+		wgt._cancelMoving = null;
 	},
 	doMouseMove: zk.$void,
 	doMouseUp: function(event){
 		this._down = false;
+	},
+	doMouseOut: function(event){
+		this._down = false;
 	}
+	
 });
 
 canvas.DrawTextHandler = zk.$extends(canvas.MouseHandler, {
 	doClick: function (event) {
 		var wgt = this.wgt,
-			ghostNode = wgt._ghostCvs.$n(),
+			ghostCvs = wgt._ghostCvs,
+			ghostNode = ghostCvs.$n(),
 			pos = getMousePos(event, getElementPos(ghostNode)),
 			ofs = getScrollOffset(ghostNode),
 			text = wgt._text,
 			textSize = getTextSize(text, wgt._font);
 		
-		
 		wgt.updateAttrsToServer();
 		
 		zAu.send(new zk.Event(wgt, 'onAddText', {
-			x: pos.x + ofs[0],
-			y: pos.y + ofs[1],
+			x: (pos.x + ofs[0]) / ghostCvs._scaleX,
+			y: (pos.y + ofs[1]) / ghostCvs._scaleY,
 			textSize: textSize,
 			text: wgt._textObj
 		}));
@@ -346,11 +452,11 @@ canvas.DrawTextHandler = zk.$extends(canvas.MouseHandler, {
 			ghostCvs = wgt._ghostCvs,
 			ofs = getScrollOffset(ghostCvs.$n());
 			
-		ghostCvs.clear();
 		wgt._last  = {x:pos.x, y:pos.y};
+		ghostCvs.clear();
 		ghostCvs.add(wgt._textObj.setPos(
-			pos.x + ofs[0], 
-			pos.y + ofs[1]));
+			pos.x + ofs[0] / ghostCvs._scaleX, 
+			pos.y + ofs[1] / ghostCvs._scaleY));
 	},
 });
 canvas.DrawShapeHandler = zk.$extends(canvas.MouseHandler, {
@@ -358,14 +464,16 @@ canvas.DrawShapeHandler = zk.$extends(canvas.MouseHandler, {
 		this.$supers('doMouseDown', arguments);
 		
 		var wgt = this.wgt,
-			shape = wgt._shape,
-			start = wgt._start = getMousePos(event, getElementPos(wgt._ghostCvs.$n()));
+			shape = wgt._shape;
 		
-		wgt._cancelMoving = null;
 		if (shape.$instanceof(canvas.Rectangle)) {
-			var ofs = getScrollOffset(wgt._ghostCvs.$n());
-			shape.obj.x = start.x + ofs[0];
-			shape.obj.y = start.y + ofs[1];
+			var ghostCvs = wgt._ghostCvs,
+				ofs = getScrollOffset(ghostCvs.$n()),
+				start = wgt._start;
+				
+			shape.setPos(
+				start.x + ofs[0] / ghostCvs._scaleX,
+				start.y + ofs[1] / ghostCvs._scaleY);
 		} else {
 			wgt._path.import_(shape);
 		}
@@ -377,19 +485,18 @@ canvas.DrawShapeHandler = zk.$extends(canvas.MouseHandler, {
 			ghostCvs = wgt._ghostCvs,
 			shape = wgt._shape,
 			start = wgt._start,
-			ofs = getScrollOffset(ghostCvs.$n()),
-			size = {x: pos.x - start.x, y: pos.y - start.y};
-		
+			size = {x: pos.x - start.x, y: pos.y - start.y}
 		
 		wgt._last  = {x:pos.x, y:pos.y};
 		ghostCvs.clear();
 		
 		if (shape.$instanceof(canvas.Rectangle)) {
-			shape.obj.w = size.x;
-			shape.obj.h = size.y;
-			ghostCvs.add(shape);
+			ghostCvs.add(shape.setSize(size.x, size.y));
 		} else {
-			transformPath(shape, wgt._path, size.x/1000, size.y/1000, start.x + ofs[0], start.y + ofs[1]);
+			var ofs = getScrollOffset(ghostCvs.$n());
+			transformPath(shape, wgt._path, size.x/1000, size.y/1000, 
+				start.x + ofs[0] / ghostCvs._scaleX, 
+				start.y + ofs[1] / ghostCvs._scaleY);
 			ghostCvs.add(wgt._path);
 		}
 	},
@@ -402,16 +509,16 @@ canvas.DrawShapeHandler = zk.$extends(canvas.MouseHandler, {
 			ghostCvs = wgt._ghostCvs,
 			pos = getMousePos(event, getElementPos(ghostCvs.$n())),
 			start  = wgt._start,
-			ofs = getScrollOffset(ghostCvs.$n()),
-			dx = pos.x-start.x,
-			dy = pos.y-start.y;
+			ofs = getScrollOffset(ghostCvs.$n());
 		
 		ghostCvs.clear();
 		
 		// send shape param to server
 		wgt.updateAttrsToServer();
 		zAu.send(new zk.Event(wgt, 'onAddShape', {
-			x: start.x + ofs[0], y: start.y + ofs[1], w: dx, h: dy
+			x: start.x + ofs[0] / ghostCvs._scaleX, 
+			y: start.y + ofs[1] / ghostCvs._scaleY, 
+			w: pos.x / ghostCvs._scaleX - start.x, h: pos.y / ghostCvs._scaleY - start.y
 		}));
 		
 	}
@@ -420,8 +527,6 @@ canvas.DrawArrowHandler = zk.$extends(canvas.MouseHandler, {
 	doMouseDown: function (event) {
 		this.$supers('doMouseDown', arguments);
 		var wgt = this.wgt;
-		wgt._start = getMousePos(event, getElementPos(wgt._ghostCvs.$n()))
-		wgt._cancelMoving = null;
 		wgt._path.import_(wgt._arrowTmp);
 	},
 	doMouseMove: function(pos) {
@@ -433,10 +538,14 @@ canvas.DrawArrowHandler = zk.$extends(canvas.MouseHandler, {
 			start = wgt._start,
 			ofs = getScrollOffset(ghostCvs.$n());
 		
-		
 		wgt._last  = {x:pos.x, y:pos.y};
 		ghostCvs.clear();
-		drawArrow(wgt, wgt._path, start.x + ofs[0], start.y + ofs[1], pos.x - start.x, pos.y - start.y);
+		
+		drawArrow(wgt, wgt._path, 
+			start.x + ofs[0] / ghostCvs._scaleX, 
+			start.y + ofs[1] / ghostCvs._scaleY, 
+			pos.x - start.x, 
+			pos.y - start.y);
 		ghostCvs.add(wgt._path);
 		
 	},
@@ -461,15 +570,12 @@ canvas.SelectShapeHandler = zk.$extends(canvas.MouseHandler, {
 		
 		var wgt = this.wgt,
 			frame = wgt._frame,
-			shape = wgt._shape,
 			ghostCvs = wgt._ghostCvs,
 			ofs = getScrollOffset(ghostCvs.$n()),
-			start = wgt._start = getMousePos(event, getElementPos(ghostCvs.$n())),
-			startX = start.x + ofs[0],
-			startY = start.y + ofs[1],
-			mode;
+			start = wgt._start,
+			startX = start.x + ofs[0] / ghostCvs._scaleX,
+			startY = start.y + ofs[1] / ghostCvs._scaleY;
 		
-		wgt._cancelMoving = null;
 		if (frame.contains(startX, startY)) {
 			wgt.setMode('select-moving');
 			
@@ -477,20 +583,6 @@ canvas.SelectShapeHandler = zk.$extends(canvas.MouseHandler, {
 				x: startX - frame.obj.x,
 				y: startY - frame.obj.y
 			};
-			
-			var selDrawables = wgt._selDrawables;
-			if (selDrawables)
-				for (var d, i = 0, j = selDrawables.length; i < j; i++) {
-					d = selDrawables[i];
-					
-					if (d.$instanceof(canvas.Text)) {
-						var obj = d.obj;
-						d._orgX = obj.x;
-						d._orgY = obj.y;
-					}
-					
-					ghostCvs.add(d);
-				}
 				
 			zAu.send(new zk.Event(wgt, 'onStarMoveShape'));
 			wgt._last  = {x:startX, y:startY};
@@ -504,12 +596,13 @@ canvas.SelectShapeHandler = zk.$extends(canvas.MouseHandler, {
 		
 		var wgt = this.wgt,
 			ghostCvs = wgt._ghostCvs,
-			start = wgt._start,
-			size = {x: pos.x - start.x, y: pos.y - start.y};
+			start = wgt._start;
 		
 		wgt._last  = {x:pos.x, y:pos.y};
 		ghostCvs.clear();
-		ghostCvs.add(wgt._frame.setSize(size.x, size.y));
+		ghostCvs.add(wgt._frame.setSize(
+			pos.x - start.x, 
+			pos.y - start.y));
 	},
 	doMouseUp: function(event){
 		this.$supers('doMouseUp', arguments);
@@ -520,9 +613,13 @@ canvas.SelectShapeHandler = zk.$extends(canvas.MouseHandler, {
 			ghostCvs = wgt._ghostCvs,
 			pos = getMousePos(event, getElementPos(ghostCvs.$n())),
 			ofs = getScrollOffset(ghostCvs.$n()),
-			start  = wgt._start,
-			x = Math.min(start.x, pos.x) + ofs[0],
-			y = Math.min(start.y, pos.y) + ofs[1],
+			start  = wgt._start;
+			
+		pos.x /= ghostCvs._scaleX;
+		pos.y /= ghostCvs._scaleY;
+			
+		var x = Math.min(start.x, pos.x) + ofs[0] / ghostCvs._scaleX,
+			y = Math.min(start.y, pos.y) + ofs[1] / ghostCvs._scaleY,
 			w = Math.abs(start.x - pos.x),
 			h = Math.abs(start.y - pos.y);
 			startX = start.x,
@@ -537,10 +634,7 @@ canvas.SelectShapeHandler = zk.$extends(canvas.MouseHandler, {
 			
 		// send selected region param to server
 		zAu.send(new zk.Event(wgt, 'onSelect',{
-			x: x, 
-			y: y, 
-			w: w, 
-			h: h
+			x: x, y: y, w: w, h: h
 		}));
 	}
 });
@@ -556,15 +650,15 @@ canvas.SelectMovingShapeHandler = zk.$extends(canvas.MouseHandler, {
 			size = {x: pos.x - start.x, y: pos.y - start.y},
 			frame, dx, dy;
 			
-		pos.x += ofs[0];
-		pos.y += ofs[1];
+		pos.x += ofs[0]/ ghostCvs._scaleX;
+		pos.y += ofs[1]/ ghostCvs._scaleY;
 		
 		dx = pos.x - last.x;
 		dy = pos.y - last.y;
+		
 		frame = wgt._frame.setPos(pos.x - selMoveOfs.x, pos.y - selMoveOfs.y)
 			
 		ghostCvs.clear();
-		
 		
 		if (selDrawables)
 			for (var d, i = 0, j = selDrawables.length; i < j; i++) {
@@ -598,8 +692,10 @@ canvas.SelectMovingShapeHandler = zk.$extends(canvas.MouseHandler, {
 		
 		ghostCvs.clear();
 		ghostCvs.add(wgt._frame);
+		
 		zAu.send(new zk.Event(wgt, 'onEndMoveShape', {
-			dx:pos.x-start.x, dy:pos.y-start.y}));
+			dx:pos.x / ghostCvs._scaleX - start.x, 
+			dy:pos.y / ghostCvs._scaleY - start.y}));
 	}
 });
 });

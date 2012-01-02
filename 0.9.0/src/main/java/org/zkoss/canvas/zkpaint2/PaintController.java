@@ -3,17 +3,16 @@ package org.zkoss.canvas.zkpaint2;
 import java.awt.geom.Arc2D;
 import java.awt.geom.PathIterator;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.zkoss.canvas.drawable.Drawable;
 import org.zkoss.canvas.drawable.Path;
 import org.zkoss.canvas.drawable.Rectangle;
 import org.zkoss.canvas.drawable.Shape;
 import org.zkoss.canvas.drawable.Text;
 import org.zkoss.canvas.util.Shapes;
-import org.zkoss.json.JSONValue;
+import org.zkoss.image.Image;
+import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
@@ -116,6 +115,10 @@ public class PaintController extends GenericForwardComposer {
 		return sg;
 	}
 
+	public void onImageReady$paintDiv() {
+		addToList("Image");
+	}
+	
 	public void onAddText$paintDiv(ForwardEvent event) {
 		Map data = (Map) event.getOrigin().getData();
 		paintDiv.addDrawable((Text) data.get("text"));
@@ -124,8 +127,7 @@ public class PaintController extends GenericForwardComposer {
 	
 	public void onAddShape$paintDiv(ForwardEvent event) {
 		Map data = (Map) event.getOrigin().getData();
-		Shape s = (Shape) data.get("shape");
-		paintDiv.addDrawable((Drawable) s);
+		paintDiv.addDrawable((Shape) data.get("shape"));
 		addToList(_shapeNames.get(paintDiv.getShapeIndex()));
 	}
 	
@@ -135,8 +137,7 @@ public class PaintController extends GenericForwardComposer {
 	
 	public void onAddArrow$paintDiv(ForwardEvent event) {
 		Map data = (Map) event.getOrigin().getData();
-		Shape s = (Shape) data.get("arrow");
-		paintDiv.addDrawable((Drawable) s);
+		paintDiv.addDrawable((Shape) data.get("arrow"));
 		addToList("arrow");
 	}
 	
@@ -156,55 +157,25 @@ public class PaintController extends GenericForwardComposer {
 		}
 	}
 	
-	public void onSave() {
-		Filedownload.save(JSONValue.toJSONString(paintDiv.getAllDrawables()), null, "graph.txt");
-	}
-	
 	public void onLoad(ForwardEvent event) {
 		UploadEvent uploadEvt = (UploadEvent)event.getOrigin();
 		
-		String content = uploadEvt.getMedia().getStringData();
-		
-		for (Drawable d : ShapeUtils.stringToDrawables(content)) {
-			
-			paintDiv.addDrawable(d);
-			if (d instanceof Text) {
-				addToList("Text");
-			} else if (d instanceof Rectangle) {
-				addToList("Rectangle");
-			} else if (d instanceof Path) {
-				addToList(getPathName((Path) d));
-			}
-		}
+		Media media = uploadEvt.getMedia();
+		if (media instanceof Image) {
+			paintDiv.setContent((Image) media);
+		} 
 	}
-
-	private String getPathName(Path targetPath) {
-		boolean found = false;
-		
-		List<Integer> tSg = getSg(targetPath);
-		if (arrowInfo.equals(tSg))
-			return "arrow";
-		
-		int i = 1;
-		for (Iterator it = pathInfos.iterator(); it.hasNext(); i++) {
-			List<Integer> info = (List<Integer>) it.next();
-			if (info.equals(tSg))
-				break;
-		}
-		//Circle or Heart
-		if (i == 3) {
-			PathIterator pi = targetPath.getPathIterator(null);
-			float[] coords = new float[6];
-			
-			float c0 = pi.currentSegment(coords);
-			pi.next();
-			float c1 = pi.currentSegment(coords);
-			
-			i = c0 == c1 ? 3: 6;
-		}
-		
-
-		return _shapeNames.get(i);
+	
+	public void onSave() {
+		paintDiv.exportPng();
 	}
+	
+	public void onExportPng$paintDiv(ForwardEvent event) {
+		Map data = (Map) event.getOrigin().getData();
+		
+		byte[] byteData = (byte[]) data.get("byteData");
+		Filedownload.save(byteData , "png", "canvas.png");
+	}
+	
 	
 }

@@ -1,4 +1,32 @@
-<?page title="Canvas Demo" contentType="text/html;charset=UTF-8"?>
-<zk>
-	<include src="zkpaint/zkpaint.zul" />
+<?script type="text/javascript" src="/zkpaint/scripts/paintDiv.js"?>
+<?component name="paintDiv" class="org.zkoss.canvas.zkpaint2.PaintDiv"?>
+<?link rel="stylesheet" type="text/css" href="zkpaint/css/zkpaint.css"?>
+<zk xmlns:w="client">
+	<window id="zkpaintWindow" title="Zkossoft Paint" border="normal" height="700px"
+		apply="org.zkoss.canvas.zkpaint2.PaintController" width="1150px" contentStyle="overflow:auto;">
+		<borderlayout>
+			<north border="none">
+				<div fulfill="=zkpaint/tool-panel2.zul" height="93px"
+					style="background-image:url('zkpaint/img/tool-panel-bg.png')" />
+			</north>
+			<center border="none"
+				style="background-color:#cbd5e4">
+				<paintDiv style="margin:10px;overflow:auto;position: relative;" id="paintDiv" width="800px" height="500px"/>
+			</center>
+			<east>
+				<window id="shapeListWindow" title="Drawable Item List"
+					apply="org.zkoss.canvas.zkpaint2.ShapeListController"
+					mode="overlapped" width="250px" height="500px" border="normal"
+					left="840px" top="140px">
+					<listbox id="shapeListBox" multiple="true"
+						checkmark="true" vflex="1">
+						<listhead>
+							<listheader label="Shape"/>
+						</listhead>
+					</listbox>
+					<button id="deleteBtn" label="Delete" />
+				</window>
+			</east>
+		</borderlayout>
+	</window>
 </zk>
