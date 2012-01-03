@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.zkoss.canvas.drawable.ImageSnapshot;
 import org.zkoss.canvas.drawable.Path;
 import org.zkoss.canvas.drawable.Rectangle;
 import org.zkoss.canvas.drawable.Shape;
@@ -115,7 +116,9 @@ public class PaintController extends GenericForwardComposer {
 		return sg;
 	}
 
-	public void onImageReady$paintDiv() {
+	public void onImageReady$paintDiv(ForwardEvent event) {
+		Map data = (Map) event.getOrigin().getData();
+		paintDiv.addDrawable((ImageSnapshot) data.get("image"));
 		addToList("Image");
 	}
 	
