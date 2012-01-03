@@ -174,7 +174,24 @@ public class PaintDiv extends Div implements AfterCompose {
 		if (this.shapeIndex != shapeIndex) {
 			this.shapeIndex = shapeIndex;
 			smartUpdate("shapeIndex", shapeIndex);
+			
 		}
+	}
+	
+	public void startDrawShape() {
+		smartUpdate("mode", "to-draw");
+	}
+	
+	public void startDrawText() {
+		smartUpdate("mode", "to-draw-arrow");
+	}
+	
+	public void startDrawArrow() {
+		smartUpdate("mode", "to-draw-arrow");
+	}
+	
+	public void startSelect() {
+		smartUpdate("mode", "to-select");
 	}
 	
 	public void setShapeCategory(List<Shape> shapeCategory) {
@@ -213,8 +230,9 @@ public class PaintDiv extends Div implements AfterCompose {
 		Map data = (Map) request.getData();
 		if ("onImageReady".equals(name)) {
 			if (imgArea.getContent() != null) {
-				canvas.add(new ImageSnapshot(imgArea, 0, 0));
-				Events.postEvent(new Event(name, this));
+				data = new HashMap();
+				data.put("image", new ImageSnapshot(imgArea, 0, 0));
+				Events.postEvent(new Event(name, this, data));
 			}
 		} else if ("onAddText".equals(name)) {
 			Text txt = new Text(getText(), getDouble(data, "x"), getDouble(data, "y"));
