@@ -51,7 +51,7 @@ public class CanvasMouseEvent extends MouseEvent {
 	 * Converts an AU request to a canvas mouse event.
 	 */
 	public static CanvasMouseEvent getEvent(AuRequest request) {
-		final Map<?,?> data = request.getData();
+		final Map<String, Object> data = request.getData();
 		final String name = request.getCommand();
 		final int keys = AuRequests.parseKeys(data);
 		return new CanvasMouseEvent(name, request.getComponent(), 

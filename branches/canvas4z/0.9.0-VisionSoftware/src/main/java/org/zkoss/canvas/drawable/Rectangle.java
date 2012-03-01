@@ -18,6 +18,7 @@ package org.zkoss.canvas.drawable;
 
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.zkoss.json.JSONAware;
@@ -118,7 +119,9 @@ public class Rectangle extends Shape {
 	}
 	
 	public boolean equals(Object obj) {
-		return ((Rectangle2D.Double) _internalShape).equals(obj);
+		if (obj instanceof Rectangle)
+			return ((Rectangle2D.Double) _internalShape).equals(((Rectangle)obj)._internalShape);
+		return false;
 	}
 	
 	public double getCenterX() {
