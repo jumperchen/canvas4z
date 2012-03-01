@@ -716,9 +716,9 @@ public class DrawingStyle implements JSONAware {
 		// copy values from attrs, always overwrites
 		@SuppressWarnings("unchecked")
 		private void copyFrom(Attrs attr2) {
-			Iterator<Entry<String, Object>> itr = attr2.entrySet().iterator();
+			Iterator<Entry<Object, Object>> itr = attr2.entrySet().iterator();
 			while(itr.hasNext()) {
-				Entry<String, Object> e = itr.next();
+				Entry<Object, Object> e = itr.next();
 				put(e.getKey(), e.getValue());
 			}
 		}

@@ -243,7 +243,9 @@ public class Path extends Shape {
 		return ((Path2D.Double) _internalShape).hashCode();
 	}
 	public boolean equals(Object obj) {
-		return ((Path2D.Double) _internalShape).equals(obj);
+		if (obj instanceof Path)
+			return ((Path2D.Double) _internalShape).equals(((Path)obj)._internalShape);
+		return false;
 	}
 	public String toString() {
 		return ((Path2D.Double) _internalShape).toString();
